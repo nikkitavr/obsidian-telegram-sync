@@ -13,7 +13,8 @@ fs:
   rootDir: "notes"
 ```
 
-`rootDir` is the directory where Markdown files will be created.
+`rootDir` is the directory where Markdown files will be created. Messages from
+each chat are stored in a subfolder named after the chat id.
 
 ## Run
 

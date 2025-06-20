@@ -25,10 +25,15 @@ public class FileServiceTest {
         User user = new User();
         user.setFirstName("tester");
         msg.setFrom(user);
+        msg.setChatId(123L);
+
         fs.saveMessage(tempDir, msg);
-        String name = tempDir.resolve(java.time.LocalDate.now().toString() + ".md").toString();
-        assertTrue(Files.exists(Path.of(name)), "note file created");
-        String content = Files.readString(Path.of(name));
+
+        Path notePath = tempDir
+            .resolve("123")
+            .resolve(java.time.LocalDate.now().toString() + ".md");
+        assertTrue(Files.exists(notePath), "note file created");
+        String content = Files.readString(notePath);
         assertTrue(content.contains("tester: hello"));
     }
 }
