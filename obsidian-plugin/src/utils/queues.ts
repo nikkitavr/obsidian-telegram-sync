@@ -1,4 +1,4 @@
-import TelegramSyncPlugin from "src/main";
+import TelegramSyncPlugin from "obsidian-plugin/src/main";
 
 type AsyncStaticFunction<A extends unknown[] = unknown[], R = unknown> = (...args: A) => Promise<R>;
 type AsyncInstanceFunction<C = undefined, A extends unknown[] = unknown[], R = unknown> = (

@@ -1,6 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
 import { Notice } from "obsidian";
-import TelegramSyncPlugin from "src/main";
+import TelegramSyncPlugin from "obsidian-plugin/src/main";
 import { stopUpdatingProcessingDate } from "src/telegram/user/sync";
 
 export const _1sec = 1000;
