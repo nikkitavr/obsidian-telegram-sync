@@ -1,0 +1,17 @@
+{
+  "vaultPath": "/path/to/vault",
+  "distributionRules": [
+    {
+      "messageFilterQuery": "{{chat=Заметки}} {{topic=📚 Ежедневные заметки}}",
+      "templatePath": "_service/Telegram Sync/📥 Телеграммная заметка - Шаблон (ежедневные заметки).md",
+      "notePathTemplate": "🌅 Хранилище/📓 Заметки/1. 📮 Inbox/📝 Ежедневные заметки (telegram) ~/{{messageDate:DD-MM-YYYY}}.md",
+      "filePathTemplate": "_service/Telegram Sync/files/{{file:type}}_{{file:name}} [{{messageTime:DD-MM-YYYY HH-mm}}].{{file:extension}}"
+    },
+    {
+      "messageFilterQuery": "{{chat=Заметки}} {{topic=Дневник}}",
+      "templatePath": "_service/Telegram Sync/📥 Телеграммная заметка - Шаблон (дневник).md",
+      "notePathTemplate": "🌅 Хранилище/📓 Заметки/1. 📮 Inbox/🏔️ Дневник (telegram) ~/{{messageDate:DD-MM-YYYY}}.md",
+      "filePathTemplate": "_service/Telegram Sync/files/{{file:type}}_{{file:name}} [{{messageTime:DD-MM-YYYY HH-mm}}].{{file:extension}}"
+    }
+  ]
+}
