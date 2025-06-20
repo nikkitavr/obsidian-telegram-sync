@@ -18,12 +18,6 @@ public class TelegramBotController extends TelegramLongPollingBot {
         this.myBotService = myBotService;
     }
 
-    //TODO: uncomment when tg integration will be ready
-    //@PostConstruct
-    public void start() throws Exception {
-        TelegramBotsApi api = new TelegramBotsApi(DefaultBotSession.class);
-        api.registerBot(this);
-    }
 
     @Override
     public void onUpdateReceived(Update update) {

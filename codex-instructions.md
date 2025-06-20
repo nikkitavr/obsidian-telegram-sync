@@ -1,5 +1,13 @@
 Мой начальный запрос:
 ----
+Short task list:
+- инициализация Maven проекта и Spring Boot каркаса;
+- подключение Telegram Bot API, обработка текстовых и медиа сообщений;
+- маршрутизация сообщений по правилам и шаблонам;
+- сохранение заметок и файлов в `telegram.bot.rootDirectory`;
+- поддержка транскрипции голосовых сообщений;
+- CLI и документация, тесты (`mvn test` при наличии зависимостей).
+
 
 Надо создать телеграм бота. Я хочу сделать аналог Obsidian Telegram Sync от soberhacker'a по функционалу, но чтобы он работал с файловой системой как standalone приложение, а не как obsidian-plugin.
 Соответсвенно мне нужно:
@@ -22,6 +30,7 @@
     файлу (codex-instructions) как манифесту. Я буду запускать разные сессии, поэтому чтобы не терять контекст, при коммитах тебе надо добавлять в конец этого
     файла какую-то важную информацию для ии-агента в следующей сессии (который продолжит твою работу), либо править что-то не только в конце, если сочтешь нужным.
     Основной критерий - эффективная работа.
+Используем application.yml с ключами `telegram.bot.token` и `telegram.bot.rootDirectory`.
     Основываясь на кодовой базе, коммитах и этом манифесте, тебе нужно понять, на каком этапе (задаче), мы сейчас находимся и продолжить работу.
 
 Более четкое описание:
@@ -202,9 +211,4 @@ CLI и документация
 Progress:
 - implemented FileService for saving text messages and basic MyBotService calling it.
 - FileService now stores notes per chat id and updated test accordingly.
-
-Improvement proposal for this file:
-- Move the short task list to the top for quick reference.
-- Keep progress updates concise (one line per commit).
-- Clarify configuration keys (use `telegram.bot.token` and `telegram.bot.rootDirectory`).
-- Mention that tests should run via `mvn test` when dependencies are available.
+- added TelegramBotRunner to start bot and updated README

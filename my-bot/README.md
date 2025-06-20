@@ -7,13 +7,13 @@ Simple Telegram bot that writes received text messages to Markdown files.
 Edit `src/main/resources/application.yml` or provide a path to another YAML file as the first program argument.
 
 ```
-bot:
-  token: "YOUR_BOT_TOKEN"
-fs:
-  rootDir: "notes"
+telegram:
+  bot:
+    token: "YOUR_BOT_TOKEN"
+    rootDirectory: "notes"
 ```
 
-`rootDir` is the directory where Markdown files will be created. Messages from
+`rootDirectory` is the folder where Markdown files will be created. Messages from
 each chat are stored in a subfolder named after the chat id.
 
 ## Run
