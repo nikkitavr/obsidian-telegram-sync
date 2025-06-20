@@ -199,4 +199,12 @@ CLI и документация
 
 ---
 
-Progress: implemented FileService for saving text messages and basic MyBotService calling it.
+Progress:
+- implemented FileService for saving text messages and basic MyBotService calling it.
+- FileService now stores notes per chat id and updated test accordingly.
+
+Improvement proposal for this file:
+- Move the short task list to the top for quick reference.
+- Keep progress updates concise (one line per commit).
+- Clarify configuration keys (use `telegram.bot.token` and `telegram.bot.rootDirectory`).
+- Mention that tests should run via `mvn test` when dependencies are available.

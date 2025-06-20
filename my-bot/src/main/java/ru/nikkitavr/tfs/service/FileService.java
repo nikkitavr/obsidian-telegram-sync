@@ -22,7 +22,12 @@ public class FileService {
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate();
 
-        Path note = root.resolve(date.format(DateTimeFormatter.ISO_DATE) + ".md");
+        Path chatDir = root.resolve(String.valueOf(message.getChatId()));
+        if (!Files.exists(chatDir)) {
+            Files.createDirectories(chatDir);
+        }
+
+        Path note = chatDir.resolve(date.format(DateTimeFormatter.ISO_DATE) + ".md");
         String user = message.getFrom() != null ? message.getFrom().getFirstName() : "unknown";
         String text = message.hasText() ? message.getText() : "";
         String line = String.format("%s: %s%n", user, text);
