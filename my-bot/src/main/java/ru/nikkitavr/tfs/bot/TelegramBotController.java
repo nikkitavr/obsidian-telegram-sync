@@ -1,20 +1,25 @@
 package ru.nikkitavr.tfs.bot;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-import ru.nikkitavr.tfs.fs.FileService;
+import ru.nikkitavr.tfs.service.MyBotService;
 
-public class TelegramFsBot extends TelegramLongPollingBot {
-    private final String token;
-    private final FileService fileService;
+@Component
+public class TelegramBotController extends TelegramLongPollingBot {
+    private final MyBotService myBotService;
 
-    public TelegramFsBot(String token, FileService fileService) {
-        this.token = token;
-        this.fileService = fileService;
+    @Autowired
+    public TelegramBotController(BotProperties botProperties, MyBotService myBotService) {
+        super(botProperties.getToken());
+        this.myBotService = myBotService;
     }
 
+    //TODO: uncomment when tg integration will be ready
+    //@PostConstruct
     public void start() throws Exception {
         TelegramBotsApi api = new TelegramBotsApi(DefaultBotSession.class);
         api.registerBot(this);
@@ -22,9 +27,9 @@ public class TelegramFsBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText()) {
+        if (update.hasMessage()) {
             try {
-                fileService.saveMessage(update.getMessage());
+                myBotService.processMessage(update.getMessage());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -34,10 +39,5 @@ public class TelegramFsBot extends TelegramLongPollingBot {
     @Override
     public String getBotUsername() {
         return "";
-    }
-
-    @Override
-    public String getBotToken() {
-        return token;
     }
 }
