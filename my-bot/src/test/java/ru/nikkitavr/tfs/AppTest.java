@@ -1,4 +1,4 @@
-package ru.nikkitavr;
+package ru.nikkitavr.tfs;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

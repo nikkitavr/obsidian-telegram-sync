@@ -1,0 +1,4 @@
+bot:
+  token: "YOUR_BOT_TOKEN"
+fs:
+  rootDir: "notes"
