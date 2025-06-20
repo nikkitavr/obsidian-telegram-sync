@@ -212,3 +212,4 @@ CLI и документация
 
 
 Меня план устраивает - давай начинать. Новые ветки создавай с префиксом standalone/
+Progress: implemented FileService for saving text messages and basic MyBotService calling it.
