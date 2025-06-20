@@ -11,7 +11,9 @@
 		"test": "node esbuild.config.mjs test && npm run post-build && node install-plugin.mjs",
 		"release-notes-check": "node release-notes.mjs check",
 		"build": "tsc -noEmit -skipLibCheck && npm run lint && node esbuild.config.mjs production && npm run post-build",
-		"post-build": "node post-build.mjs"
+                "post-build": "node post-build.mjs",
+                "build-standalone": "tsc -p tsconfig.standalone.json",
+                "start": "npm run build-standalone && node dist/standalone/index.js"
 	},
 	"keywords": [
 		"Telegram",
