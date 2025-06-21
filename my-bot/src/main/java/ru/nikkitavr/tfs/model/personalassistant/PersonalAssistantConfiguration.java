@@ -1,13 +1,14 @@
-package ru.nikkitavr.tfs.model;
+package ru.nikkitavr.tfs.model.personalassistant;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
-import ru.nikkitavr.tfs.model.filter.MessageFilter;
+import ru.nikkitavr.tfs.model.personalassistant.filter.MessageFilter;
 
 @Getter
 @Setter
-public class MessageAssistantConfiguration {
+public class PersonalAssistantConfiguration {
   private String vaultPath;
   private List<DistributionRule> distributionRules;
   private GitAction gitAction;
@@ -15,6 +16,7 @@ public class MessageAssistantConfiguration {
   @Getter
   @Setter
   public static class DistributionRule {
+    @JsonProperty("messageFilterQuery")
     private MessageFilter messageFilter;
     /**
      * Путь файла шаблона (.md файл) относительно vaultPath.

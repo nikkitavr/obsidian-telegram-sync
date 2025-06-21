@@ -1,10 +1,10 @@
-package ru.nikkitavr.tfs.model.filter;
+package ru.nikkitavr.tfs.model.personalassistant.filter;
 
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import lombok.Getter;
 import org.apache.commons.lang3.function.TriFunction;
-import ru.nikkitavr.tfs.model.Message;
+import ru.nikkitavr.tfs.model.personalassistant.Message;
 
 public enum ConditionType {
   ALL("all", ((message, operation, value) -> {

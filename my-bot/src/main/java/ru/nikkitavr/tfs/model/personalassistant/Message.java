@@ -1,9 +1,11 @@
-package ru.nikkitavr.tfs.model;
+package ru.nikkitavr.tfs.model.personalassistant;
 
 import java.time.Instant;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.Accessors;
 import org.telegram.telegrambots.meta.api.objects.Audio;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Document;
@@ -15,24 +17,31 @@ import org.telegram.telegrambots.meta.api.objects.Voice;
 
 @Getter
 @Setter
+@ToString
+@Accessors(chain = true)
 //TODO: change api entities to model objects
 public class Message {
+
+  /**
+   * Integer	Unique message identifier
+   */
+  private Integer messageId;
+  /**
+   * Optional.
+   * The unique identifier of a media message group this message belongs to
+   */
+  private String mediaGroupId;
+  /**
+   * Date the message was sent in Unix time
+   */
+  private Instant date;
+
   //message content
   /**
    * Optional.
    * For text messages, the actual UTF-8 text of the message
    */
   private String text;
-  /**
-   * Optional.
-   * Message is a voice message, information about the file
-   */
-  private Voice voice;
-  /**
-   * Optional.
-   * Message is a video note, information about the video message
-   */
-  private VideoNote videoCircle;
   /**
    * Optional.
    * Message is a general file, information about the file
@@ -57,16 +66,18 @@ public class Message {
    *Caption for the document, photo or video, 0-200 characters
    */
   private String caption;
+  /**
+   * Optional.
+   * Message is a voice, information about the voice message
+   */
+  private Voice voice;
+  /**
+   * Optional.
+   * Message is a video note, information about the video message
+   */
+  private VideoNote videoCircle;
 
   //meta info
-  /**
-   * Integer	Unique message identifier
-   */
-  private Integer messageId;
-  /**
-   * Date the message was sent in Unix time
-   */
-  private Instant date;
   /**
    * Optional.
    * Unique identifier of a message thread or a forum topic to which the message belongs;
@@ -82,7 +93,7 @@ public class Message {
    * Optional.
    * Date the message was last edited in Unix time
    */
-  private Integer editDate;
+  private Instant editDate;
   /**
    * Optional.
    * For forwarded channel posts, identifier of the original message in the channel
@@ -106,13 +117,8 @@ public class Message {
    * Optional.
    * For forwarded messages, date the original message was sent
    */
-  private Integer forwardDate;
+  private Instant forwardDate;
   private Message replyToMessage;
-  /**
-   * Optional.
-   * The unique identifier of a media message group this message belongs to
-   */
-  private String mediaGroupId;
   /**
    * Optional.
    * Sender's name for messages forwarded from users who disallow adding a link to their account in forwarded messages.
@@ -132,5 +138,5 @@ public class Message {
   private Boolean isTopicMessage;
 
   //additional //TODO: понять что еще нужно добавить и где взять
-  private String VoiceTranscription;
+  private String voiceTranscription;
 }

@@ -3,4 +3,5 @@ spring:
     name: my-bot
 telegram:
   bot:
-    token: "YOUR_BOT_TOKEN"
+    token: "7727322139:AAGdHVMa4YfNJ-ekUIAmCIFCgaMZcAIGa00"
+    username: "nikkitavr_personal_assistant_bot"

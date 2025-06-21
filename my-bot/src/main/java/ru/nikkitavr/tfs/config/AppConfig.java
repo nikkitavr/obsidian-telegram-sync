@@ -14,13 +14,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import ru.nikkitavr.tfs.model.MessageAssistantConfiguration;
-import ru.nikkitavr.tfs.service.MessageAssistantConfigurationProvider;
-import ru.nikkitavr.tfs.service.MessageAssistantService;
+import ru.nikkitavr.tfs.model.personalassistant.PersonalAssistantConfiguration;
+import ru.nikkitavr.tfs.service.PersonalAssistantConfigurationProvider;
+import ru.nikkitavr.tfs.service.PersonalAssistantService;
+import ru.nikkitavr.tfs.service.telegram.TopicTitleService;
 
 @Configuration
 @Import({
-    MessageAssistantService.class,
+    PersonalAssistantService.class,
+    TopicTitleService.class
 })
 public class AppConfig {
   private static final Logger LOGGER = LoggerFactory.getLogger(AppConfig.class);
@@ -38,22 +40,23 @@ public class AppConfig {
     return objectMapper;
   }
 
+  //TODO: исправить сериалихацию
   @Bean
-  public MessageAssistantConfigurationProvider messageAssistantConfigurationProvider(ObjectMapper objectMapper) throws IOException {
-    MessageAssistantConfiguration initialConfiguration;
+  public PersonalAssistantConfigurationProvider messageAssistantConfigurationProvider(ObjectMapper objectMapper) throws IOException {
+    PersonalAssistantConfiguration initialConfiguration;
     try (InputStream is = Files.newInputStream(Path.of(MESSAGE_ASSISTANT_CONFIG_PATH))) {
-      initialConfiguration = objectMapper.readValue(is, MessageAssistantConfiguration.class);
+      initialConfiguration = objectMapper.readValue(is, PersonalAssistantConfiguration.class);
     } catch (NoSuchFileException | FileNotFoundException e) {
       LOGGER.warn("Configuration file not found: {}, default config will be used", MESSAGE_ASSISTANT_CONFIG_PATH);
       try (InputStream isFallback = getClass().getClassLoader().getResourceAsStream(MESSAGE_ASSISTANT_DEFAULT_CONFIG_PATH_RSX)) {
         if (isFallback == null) {
           throw new FileNotFoundException("Default configuration file not found");
         }
-        initialConfiguration = objectMapper.readValue(isFallback, MessageAssistantConfiguration.class);
+        initialConfiguration = objectMapper.readValue(isFallback, PersonalAssistantConfiguration.class);
       }
     }
 
-    MessageAssistantConfigurationProvider configurationProvider = new MessageAssistantConfigurationProvider();
+    PersonalAssistantConfigurationProvider configurationProvider = new PersonalAssistantConfigurationProvider();
     configurationProvider.update(initialConfiguration);
     return configurationProvider;
   }

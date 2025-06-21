@@ -5,29 +5,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.nikkitavr.tfs.model.Message;
-import ru.nikkitavr.tfs.model.MessageAssistantConfiguration;
-import static ru.nikkitavr.tfs.model.MessageAssistantConfiguration.DistributionRule;
+import ru.nikkitavr.tfs.model.personalassistant.Message;
+import ru.nikkitavr.tfs.model.personalassistant.PersonalAssistantConfiguration;
+import static ru.nikkitavr.tfs.model.personalassistant.PersonalAssistantConfiguration.DistributionRule;
 import ru.nikkitavr.tfs.utils.FileSystemUtils;
 import ru.nikkitavr.tfs.utils.TemplateUtils;
 
-public class MessageAssistantService {
-  private static final Logger LOGGER = LoggerFactory.getLogger(MessageAssistantService.class);
+public class PersonalAssistantService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(PersonalAssistantService.class);
 
-  private final MessageAssistantConfigurationProvider configProvider;
-  private final FileSystemUtils fileSystemUtils;
+  private final PersonalAssistantConfigurationProvider configProvider;
 
-  public MessageAssistantService(MessageAssistantConfigurationProvider configProvider,
-      FileSystemUtils fileSystemUtils) {
+  public PersonalAssistantService(PersonalAssistantConfigurationProvider configProvider) {
     this.configProvider = configProvider;
-    this.fileSystemUtils = fileSystemUtils;
   }
 
   /**
    * Process incoming message and store it according to configuration rules.
    */
   public void processMessage(Message message) {
-    MessageAssistantConfiguration config = configProvider.get();
+    PersonalAssistantConfiguration config = configProvider.get();
     if (config == null || config.getDistributionRules() == null) {
       return;
     }
@@ -56,14 +53,14 @@ public class MessageAssistantService {
       String notePathStr = TemplateUtils.apply(rule.getNotePathTemplate(), message);
       Path notePath = Path.of(config.getVaultPath(), notePathStr);
       try {
-        fileSystemUtils.appendToFile(notePath, noteContent);
+        FileSystemUtils.appendToFile(notePath, noteContent);
       } catch (IOException e) {
         LOGGER.error("Failed to write note {}", notePath, e);
       }
     }
   }
 
-  private DistributionRule getFirstMatchedRule(MessageAssistantConfiguration config, Message message) {
+  private DistributionRule getFirstMatchedRule(PersonalAssistantConfiguration config, Message message) {
     return config.getDistributionRules().stream()
         .filter(dr -> dr.getMessageFilter().match(message))
         .findFirst()

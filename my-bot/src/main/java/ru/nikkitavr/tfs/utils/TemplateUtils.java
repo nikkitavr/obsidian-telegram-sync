@@ -3,7 +3,7 @@ package ru.nikkitavr.tfs.utils;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import ru.nikkitavr.tfs.model.Message;
+import ru.nikkitavr.tfs.model.personalassistant.Message;
 
 /** Simple template processor for {{variable}} placeholders. */
 public class TemplateUtils {

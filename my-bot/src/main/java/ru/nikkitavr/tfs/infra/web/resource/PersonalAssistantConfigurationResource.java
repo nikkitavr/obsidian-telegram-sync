@@ -15,20 +15,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.nikkitavr.tfs.config.AppConfig;
-import ru.nikkitavr.tfs.model.MessageAssistantConfiguration;
-import ru.nikkitavr.tfs.service.MessageAssistantConfigurationProvider;
+import ru.nikkitavr.tfs.model.personalassistant.PersonalAssistantConfiguration;
+import ru.nikkitavr.tfs.service.PersonalAssistantConfigurationProvider;
 
 @RestController
-@RequestMapping("/message-assistant-bot/config")
-public class MessageAssistantConfigurationResource {
+@RequestMapping("/personal-assistant/config")
+public class PersonalAssistantConfigurationResource {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MessageAssistantConfigurationResource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PersonalAssistantConfigurationResource.class);
 
   private final ObjectMapper objectMapper;
-  private final MessageAssistantConfigurationProvider configurationProvider;
+  private final PersonalAssistantConfigurationProvider configurationProvider;
 
-  public MessageAssistantConfigurationResource(ObjectMapper objectMapper,
-      MessageAssistantConfigurationProvider configurationProvider) {
+  public PersonalAssistantConfigurationResource(ObjectMapper objectMapper,
+      PersonalAssistantConfigurationProvider configurationProvider) {
     this.objectMapper = objectMapper;
     this.configurationProvider = configurationProvider;
   }
@@ -56,8 +56,8 @@ public class MessageAssistantConfigurationResource {
   @PostMapping
   public ResponseEntity<Void> updateConfig(@RequestBody String jsonBody) {
     try {
-      MessageAssistantConfiguration config =
-          objectMapper.readValue(jsonBody, MessageAssistantConfiguration.class);
+      PersonalAssistantConfiguration config =
+          objectMapper.readValue(jsonBody, PersonalAssistantConfiguration.class);
 
       Path configPath = Path.of(AppConfig.MESSAGE_ASSISTANT_CONFIG_PATH);
       Files.createDirectories(configPath.getParent());

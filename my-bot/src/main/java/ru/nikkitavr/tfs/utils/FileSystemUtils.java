@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import org.springframework.stereotype.Component;
 
+@Component
 public class FileSystemUtils {
 
   /** Ensure that the parent directories for the given file exist. */
-  public void ensureParentExists(Path file) throws IOException {
+  public static void ensureParentExists(Path file) throws IOException {
     Path parent = file.getParent();
     if (parent != null) {
       Files.createDirectories(parent);
@@ -18,7 +20,7 @@ public class FileSystemUtils {
   /**
    * Append text to the file or create a new file if it does not exist.
    */
-  public void appendToFile(Path file, String content) throws IOException {
+  public static void appendToFile(Path file, String content) throws IOException {
     ensureParentExists(file);
     if (Files.exists(file)) {
       Files.writeString(file, content, StandardOpenOption.APPEND);
@@ -30,7 +32,7 @@ public class FileSystemUtils {
   /**
    * Returns a unique file path by appending increasing numbers if needed.
    */
-  public Path getUniqueFilePath(Path file) {
+  public static Path getUniqueFilePath(Path file) {
     if (!Files.exists(file)) {
       return file;
     }

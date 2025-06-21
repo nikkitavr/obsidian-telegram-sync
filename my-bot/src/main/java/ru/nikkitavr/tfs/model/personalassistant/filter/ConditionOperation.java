@@ -1,4 +1,4 @@
-package ru.nikkitavr.tfs.model.filter;
+package ru.nikkitavr.tfs.model.personalassistant.filter;
 
 import java.util.Arrays;
 import java.util.NoSuchElementException;

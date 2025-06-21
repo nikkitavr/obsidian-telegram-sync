@@ -1,17 +1,26 @@
-package ru.nikkitavr.tfs.model.filter;
+package ru.nikkitavr.tfs.model.personalassistant.filter;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.Getter;
 import org.mvel2.MVEL;
-import ru.nikkitavr.tfs.model.Message;
+import ru.nikkitavr.tfs.model.personalassistant.Message;
 
 public class MessageFilter {
+  @JsonIgnore
   private static final Pattern pattern = Pattern.compile("\\{\\{(\\w+)([=~])([^}]+)}}");
-
+  @JsonIgnore
   private final String normalizedQuery;
 
+  @Getter
+  private String query;
+
+  @JsonCreator
   public MessageFilter(String query) {
+    this.query = query;
     this.normalizedQuery = query
         .replaceAll("(?i)\\band\\b", "&&")
         .replaceAll("(?i)\\bor\\b",  "||");
