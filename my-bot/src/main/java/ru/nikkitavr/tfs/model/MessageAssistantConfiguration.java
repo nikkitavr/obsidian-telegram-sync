@@ -3,6 +3,7 @@ package ru.nikkitavr.tfs.model;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import ru.nikkitavr.tfs.model.filter.MessageFilter;
 
 @Getter
 @Setter
@@ -14,7 +15,7 @@ public class MessageAssistantConfiguration {
   @Getter
   @Setter
   public static class DistributionRule {
-    private String messageFilterQuery;
+    private MessageFilter messageFilter;
     /**
      * Путь файла шаблона (.md файл) относительно vaultPath.
      * В шаблоне будут указаны переменные-шаблонизаторы, которые будут доставать из сообщения Message соответвсующий контент

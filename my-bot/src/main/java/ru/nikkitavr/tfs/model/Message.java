@@ -130,4 +130,7 @@ public class Message {
    * True, if the message is sent to a forum topic
    */
   private Boolean isTopicMessage;
+
+  //additional //TODO: понять что еще нужно добавить и где взять
+  private String VoiceTranscription;
 }
