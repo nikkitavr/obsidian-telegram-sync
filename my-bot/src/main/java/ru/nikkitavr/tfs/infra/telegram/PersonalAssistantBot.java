@@ -2,14 +2,21 @@ package ru.nikkitavr.tfs.infra.telegram;
 
 import jakarta.annotation.PostConstruct;
 import java.time.Instant;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.api.methods.reactions.SetMessageReaction;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.EntityType;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.reactions.ReactionTypeEmoji;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.BotSession;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 import ru.nikkitavr.tfs.model.personalassistant.Message;
@@ -19,10 +26,12 @@ import ru.nikkitavr.tfs.service.telegram.TopicTitleService;
 
 @Component
 public class PersonalAssistantBot extends TelegramLongPollingBot {
-    private BotSession botSession;
+    private final static Logger LOGGER = LoggerFactory.getLogger(PersonalAssistantBot.class);
+
     private final String botUsername;
     private final PersonalAssistantService personalAssistantService;
     private final TopicTitleService topicTitleService;
+    private BotSession botSession;
 
 
     @Autowired
@@ -126,10 +135,63 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
         switch (PersonalAssistantBotCommand.fromValue(command.command())) {
             case SET_TOPIC_TITLE -> {
                 if (!message.getIsTopicMessage()) {
-                    throw new IllegalArgumentException("SET_TOPIC_TITLE only for topics");
+                    throw new IllegalArgumentException("command");
                 }
                 topicTitleService.setTitleForTopic(message.getChat().getId(), message.getMessageThreadId(), command.arguments());
             }
+        }
+    }
+
+
+
+
+    private void sendMessage(Long chatId, String text) {
+        sendMessage(chatId, null, text, null);
+    }
+
+    private void sendMessage(Long chatId, String text, Integer replyToMessageId) {
+        sendMessage(chatId, null, text, replyToMessageId);
+    }
+
+    private void sendMessage(Long chatId, Integer threadId, String text) {
+        sendMessage(chatId, threadId, text, null);
+    }
+
+    private void sendMessage(Long chatId, Integer threadId, String text, Integer replyToMessageId) {
+        try {
+            execute(SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .messageThreadId(threadId)
+                .text(text)
+                .replyToMessageId(replyToMessageId)
+                .build()
+            );
+        } catch (TelegramApiException e) {
+            LOGGER.error("Error on send message to chat: chatId={}, threadId={}, text={}, replyToMessageId={}",
+                chatId,
+                threadId,
+                text,
+                replyToMessageId,
+                e
+            );
+        }
+    }
+
+    private void sendReaction(Long chatId, Integer messageId, String emoji) {
+        try {
+            execute(SetMessageReaction.builder()
+                .chatId(String.valueOf(chatId))
+                .messageId(messageId)
+                .reactionTypes(List.of(ReactionTypeEmoji.builder().emoji(emoji).build()))
+                .build()
+            );
+        } catch (TelegramApiException e) {
+            LOGGER.error("Error on send message to chat: chatId={}, messageId={}, emoji={}",
+                chatId,
+                messageId,
+                emoji,
+                e
+            );
         }
     }
 }
