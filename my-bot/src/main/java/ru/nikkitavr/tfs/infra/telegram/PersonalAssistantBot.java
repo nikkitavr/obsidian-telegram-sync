@@ -1,8 +1,9 @@
 package ru.nikkitavr.tfs.infra.telegram;
 
 import jakarta.annotation.PostConstruct;
-import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +20,16 @@ import org.telegram.telegrambots.meta.api.objects.reactions.ReactionTypeEmoji;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.BotSession;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+import ru.nikkitavr.tfs.infra.telegram.exception.UIException;
+import ru.nikkitavr.tfs.infra.telegram.exception.WrongCommandUsageException;
 import ru.nikkitavr.tfs.model.personalassistant.Message;
 import ru.nikkitavr.tfs.model.telegram.BotCommand;
+import static ru.nikkitavr.tfs.model.telegram.BotReactions.EDITED_MESSAGE_PROCESSED;
+import static ru.nikkitavr.tfs.model.telegram.BotReactions.NEW_MESSAGE_PROCESSED;
+import ru.nikkitavr.tfs.model.telegram.BotUpdateType;
 import ru.nikkitavr.tfs.service.PersonalAssistantService;
 import ru.nikkitavr.tfs.service.telegram.TopicTitleService;
+import ru.nikkitavr.tfs.utils.TimeUtils;
 
 @Component
 public class PersonalAssistantBot extends TelegramLongPollingBot {
@@ -54,20 +61,23 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (update.hasMessage()) {
-            try {
-                var message = update.getMessage();
-                if (checkForCommands(message)) {
-                    return;
-                }
+        org.telegram.telegrambots.meta.api.objects.Message message;
+        BotUpdateType updateType;
 
-                toAssistantMessage(update.getMessage());
-                //personalAssistantService.processMessage(toAssistantMessage(update.getMessage()));
-            } catch (Exception e) {
-                //todo: send exception message to chat or group or etc. where message comes from
-                e.printStackTrace();
-            }
+        if (update.hasMessage()) {
+            message = update.getMessage();
+            updateType = BotUpdateType.NEW_MESSAGE;
+        } else if (update.hasEditedMessage()) {
+            message = update.getEditedMessage();
+            updateType = BotUpdateType.MESSAGE_EDITED;
+        } else if (update.hasEditedChannelPost()) {
+            message = update.getEditedChannelPost();
+            updateType = BotUpdateType.MESSAGE_EDITED;
+        } else {
+            return;
         }
+
+        handleUpdate(message, updateType);
     }
 
     @Override
@@ -75,11 +85,66 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
         return botUsername;
     }
 
+    private void handleUpdate(org.telegram.telegrambots.meta.api.objects.Message message, BotUpdateType updateType) {
+        try {
+            if (checkForCommands(message)) {
+                return;
+            }
+
+            personalAssistantService.processMessage(toAssistantMessage(message));
+            sendReaction(
+                message.getChatId(),
+                message.getMessageThreadId(),
+                updateType == BotUpdateType.NEW_MESSAGE ?
+                    NEW_MESSAGE_PROCESSED.getEmoji() :
+                    EDITED_MESSAGE_PROCESSED.getEmoji()
+            );
+        } catch (UIException e) {
+            sendMessage(message.getChatId(), message.getMessageThreadId(), e.getMessage());
+        } catch (Exception e) {
+            sendMessage(message.getChatId(), message.getMessageThreadId(), Arrays.toString(e.getStackTrace()));
+            LOGGER.error("Some unhandled error", e);
+        }
+    }
+
+
+    public boolean checkForCommands(org.telegram.telegrambots.meta.api.objects.Message message) throws WrongCommandUsageException {
+        if(message.getEntities() == null) {
+            return false;
+        }
+
+        for (MessageEntity entity : message.getEntities()) {
+            if (entity != null && entity.getOffset() == 0 && EntityType.BOTCOMMAND.equals(entity.getType())) {
+                BotCommand command = BotCommand.fromText(message.getText());
+                if(command.qualifier() == null || command.qualifier().equals(getBotUsername())) {
+                    handleCommand(command, message);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void handleCommand(BotCommand command, org.telegram.telegrambots.meta.api.objects.Message message) throws WrongCommandUsageException {
+        switch (PersonalAssistantBotCommand.fromValue(command.command())) {
+            case SET_TOPIC_TITLE -> {
+                if (!message.getIsTopicMessage()) {
+                    throw new WrongCommandUsageException("This command should only be used in topics");
+                }
+                if (StringUtils.isBlank(command.arguments())) {
+                    throw new WrongCommandUsageException("Topic name is missing. " +
+                        "Provide it after command: `/cmnd@bot <topicName>` or `/cmnd <topicName>`");
+                }
+                topicTitleService.setTitleForTopic(message.getChat().getId(), message.getMessageThreadId(), command.arguments());
+            }
+        }
+    }
+
     public Message toAssistantMessage(org.telegram.telegrambots.meta.api.objects.Message botMessage) {
         Message msg = new Message()
             .setMessageId(botMessage.getMessageId())
             .setMediaGroupId(botMessage.getMediaGroupId())
-            .setDate(toInstant(botMessage.getDate()))
+            .setDate(TimeUtils.toInstant(botMessage.getDate()))
 
 
             .setText(botMessage.getText())
@@ -94,12 +159,12 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
 
             .setMessageThreadId(botMessage.getMessageThreadId())
             //.setFrom()
-            .setEditDate(toInstant(botMessage.getEditDate()))
+            .setEditDate(TimeUtils.toInstant(botMessage.getEditDate()))
             .setForwardFromMessageId(botMessage.getForwardFromMessageId())
             //.setChat()
             //.setForwardFrom()
             //.setForwardFromChat()
-            .setForwardDate(toInstant(botMessage.getForwardDate()))
+            .setForwardDate(TimeUtils.toInstant(botMessage.getForwardDate()))
             .setForwardSenderName(botMessage.getForwardSenderName())
             //.setSenderChat()
             .setIsTopicMessage(botMessage.getIsTopicMessage());
@@ -110,39 +175,6 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
         System.out.println("debug");
         return msg;
     }
-
-    public Instant toInstant(Integer unixTime) {
-        if (unixTime == null) {
-            return null;
-        }
-        return Instant.ofEpochSecond(unixTime);
-    }
-
-    public boolean checkForCommands(org.telegram.telegrambots.meta.api.objects.Message message) {
-        for (MessageEntity entity : message.getEntities()) {
-            if (entity != null && entity.getOffset() == 0 && EntityType.BOTCOMMAND.equals(entity.getType())) {
-                BotCommand command = BotCommand.fromText(message.getText());
-                if(command.qualifier() == null || command.qualifier().equals(getBotUsername())) {
-                    handleCommand(command, message);
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void handleCommand(BotCommand command, org.telegram.telegrambots.meta.api.objects.Message message) {
-        switch (PersonalAssistantBotCommand.fromValue(command.command())) {
-            case SET_TOPIC_TITLE -> {
-                if (!message.getIsTopicMessage()) {
-                    throw new IllegalArgumentException("command");
-                }
-                topicTitleService.setTitleForTopic(message.getChat().getId(), message.getMessageThreadId(), command.arguments());
-            }
-        }
-    }
-
-
 
 
     private void sendMessage(Long chatId, String text) {
