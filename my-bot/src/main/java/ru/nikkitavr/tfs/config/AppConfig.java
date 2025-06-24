@@ -40,7 +40,6 @@ public class AppConfig {
     return objectMapper;
   }
 
-  //TODO: исправить сериалихацию
   @Bean
   public PersonalAssistantConfigurationProvider messageAssistantConfigurationProvider(ObjectMapper objectMapper) throws IOException {
     PersonalAssistantConfiguration initialConfiguration;

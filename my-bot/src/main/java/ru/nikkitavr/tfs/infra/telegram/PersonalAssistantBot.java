@@ -24,8 +24,8 @@ import ru.nikkitavr.tfs.infra.telegram.exception.UIException;
 import ru.nikkitavr.tfs.infra.telegram.exception.WrongCommandUsageException;
 import ru.nikkitavr.tfs.model.personalassistant.Message;
 import ru.nikkitavr.tfs.model.telegram.BotCommand;
-import static ru.nikkitavr.tfs.model.telegram.BotReactions.EDITED_MESSAGE_PROCESSED;
-import static ru.nikkitavr.tfs.model.telegram.BotReactions.NEW_MESSAGE_PROCESSED;
+import static ru.nikkitavr.tfs.model.telegram.BotReactions.EDITED_MESSAGE_PROCESSED_EMOJI;
+import static ru.nikkitavr.tfs.model.telegram.BotReactions.NEW_MESSAGE_PROCESSED_EMOJI;
 import ru.nikkitavr.tfs.model.telegram.BotUpdateType;
 import ru.nikkitavr.tfs.service.PersonalAssistantService;
 import ru.nikkitavr.tfs.service.telegram.TopicTitleService;
@@ -96,8 +96,8 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
                 message.getChatId(),
                 message.getMessageThreadId(),
                 updateType == BotUpdateType.NEW_MESSAGE ?
-                    NEW_MESSAGE_PROCESSED.getEmoji() :
-                    EDITED_MESSAGE_PROCESSED.getEmoji()
+                    NEW_MESSAGE_PROCESSED_EMOJI :
+                    EDITED_MESSAGE_PROCESSED_EMOJI
             );
         } catch (UIException e) {
             sendMessage(message.getChatId(), message.getMessageThreadId(), e.getMessage());
