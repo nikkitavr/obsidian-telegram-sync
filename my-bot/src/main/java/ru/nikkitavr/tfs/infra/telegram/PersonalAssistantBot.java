@@ -3,6 +3,7 @@ package ru.nikkitavr.tfs.infra.telegram;
 import jakarta.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -169,6 +170,17 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
             //.setSenderChat()
             .setIsTopicMessage(botMessage.getIsTopicMessage());
 
+        if (botMessage.getIsTopicMessage()) {
+            Optional<String> title = topicTitleService.getTitleForTopic(botMessage.getChatId(), botMessage.getMessageThreadId());
+            if (title.isEmpty()) {
+                sendMessage(botMessage.getChatId(), botMessage.getMessageThreadId(),
+                    "Please specify the title for this topic using command %s <title>"
+                        .formatted(PersonalAssistantBotCommand.SET_TOPIC_TITLE.getValue())
+                );
+            } else {
+                msg.setMessageThreadTitle(title.get());
+            }
+        }
         System.out.println(msg);
 
 

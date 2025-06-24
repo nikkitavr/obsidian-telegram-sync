@@ -1,15 +1,10 @@
 package ru.nikkitavr.tfs.service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.nikkitavr.tfs.model.personalassistant.PersonalAssistantConfiguration;
 import static ru.nikkitavr.tfs.model.personalassistant.PersonalAssistantConfiguration.DistributionRule;
 import ru.nikkitavr.tfs.model.personalassistant.message.Message;
-import ru.nikkitavr.tfs.utils.FileSystemUtils;
-import ru.nikkitavr.tfs.utils.TemplateUtils;
 
 public class PersonalAssistantService {
   private static final Logger LOGGER = LoggerFactory.getLogger(PersonalAssistantService.class);
@@ -34,30 +29,11 @@ public class PersonalAssistantService {
       return;
     }
 
-    String template;
-    if (rule.getTemplatePath() != null && !rule.getTemplatePath().isBlank()) {
-      Path tplPath = Path.of(config.getVaultPath(), rule.getTemplatePath());
-      try {
-        template = Files.readString(tplPath);
-      } catch (IOException e) {
-        LOGGER.error("Failed to read template {}", tplPath, e);
-        template = "{{content}}";
-      }
-    } else {
-      template = "{{content}}";
-    }
+    System.out.println(rule);
 
-    String noteContent = TemplateUtils.apply(template, message) + System.lineSeparator();
+    //TODO: на этом этапе реализован парсинг конфигурации и получение DistributionRule по фильтру.
+    // Теперь надо реализовать
 
-    if (rule.getNotePathTemplate() != null && !rule.getNotePathTemplate().isBlank()) {
-      String notePathStr = TemplateUtils.apply(rule.getNotePathTemplate(), message);
-      Path notePath = Path.of(config.getVaultPath(), notePathStr);
-      try {
-        FileSystemUtils.appendToFile(notePath, noteContent);
-      } catch (IOException e) {
-        LOGGER.error("Failed to write note {}", notePath, e);
-      }
-    }
   }
 
   private DistributionRule getFirstMatchedRule(PersonalAssistantConfiguration config, Message message) {
@@ -66,5 +42,4 @@ public class PersonalAssistantService {
         .findFirst()
         .orElse(null);
   }
-
 }
