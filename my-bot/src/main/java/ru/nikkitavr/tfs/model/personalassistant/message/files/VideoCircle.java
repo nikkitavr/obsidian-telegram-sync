@@ -5,6 +5,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class VideoCircle extends AbstractFile {
+public class VideoCircle extends AbstractTelegramFile {
   private String transcription;
 }

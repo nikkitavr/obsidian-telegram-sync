@@ -16,7 +16,6 @@ import ru.nikkitavr.tfs.model.personalassistant.message.files.Voice;
 @Setter
 @ToString
 @Accessors(chain = true)
-//TODO: change api entities to model objects
 public class Message {
 
   //message content

@@ -5,6 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Voice extends AbstractFile {
+public class Voice extends AbstractTelegramFile {
   private String transcription;
+  private String mimeType;
 }

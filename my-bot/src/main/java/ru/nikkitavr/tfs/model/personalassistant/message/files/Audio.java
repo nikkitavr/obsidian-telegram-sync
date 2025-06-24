@@ -1,4 +1,11 @@
 package ru.nikkitavr.tfs.model.personalassistant.message.files;
 
-public class Audio extends AbstractFile {
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class Audio extends AbstractTelegramFile {
+  private String fileName;
+  private String mimeType;
 }
