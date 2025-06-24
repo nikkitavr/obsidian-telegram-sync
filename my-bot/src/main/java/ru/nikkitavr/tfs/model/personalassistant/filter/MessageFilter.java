@@ -11,7 +11,7 @@ import ru.nikkitavr.tfs.model.personalassistant.Message;
 
 public class MessageFilter {
   @JsonIgnore
-  private static final Pattern pattern = Pattern.compile("\\{\\{(\\w+)([=~])([^}]+)}}");
+  private static final Pattern pattern = Pattern.compile("\\{\\{(\\w+)(?:([=~])([^}]*))?}}");
   @JsonIgnore
   private final String normalizedQuery;
 
@@ -32,8 +32,8 @@ public class MessageFilter {
 
     while (matcher.find()) {
       ConditionType conditionType = ConditionType.from(matcher.group(1));
-      ConditionOperation conditionOperation = ConditionOperation.from(matcher.group(2));
-      String value = matcher.group(3);
+      ConditionOperation conditionOperation = matcher.group(2) != null ? ConditionOperation.from(matcher.group(2)) : null;
+      String value = matcher.group(3) != null ? matcher.group(3) : null;
 
       Boolean conditionMatched = conditionType.match(message, conditionOperation, value);
       matcher.appendReplacement(resultExpression, String.valueOf(conditionMatched));

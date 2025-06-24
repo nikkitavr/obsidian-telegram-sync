@@ -7,6 +7,8 @@ import lombok.Getter;
 import org.apache.commons.lang3.function.TriFunction;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
+
+import ru.nikkitavr.tfs.infra.telegram.exception.UIException;
 import ru.nikkitavr.tfs.model.personalassistant.Message;
 import static ru.nikkitavr.tfs.utils.CommonUtils.mergeToFullName;
 
@@ -115,7 +117,10 @@ public enum ConditionType {
         .orElseThrow(NoSuchElementException::new);
   }
 
-  public Boolean match(Message message, ConditionOperation operation, String value) {
+  public Boolean match(Message message, ConditionOperation operation, String value) throws UIException {
+    if ((operation == null || value == null) && this != ALL) {
+      throw new UIException("Operation and value must be not null for condition type: " + this.name);
+    }
     return matcher.apply(message, operation, value);
   }
 }
