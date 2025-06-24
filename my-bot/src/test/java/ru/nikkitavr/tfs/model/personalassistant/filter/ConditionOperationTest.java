@@ -1,8 +1,13 @@
 package ru.nikkitavr.tfs.model.personalassistant.filter;
 
-import org.junit.jupiter.api.Test;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 class ConditionOperationTest {
     @Test
@@ -30,14 +35,20 @@ class ConditionOperationTest {
     void testAnyLeftMatchEqual() {
         assertTrue(ConditionOperation.EQUAL.anyLeftMatch(List.of("foo", "bar"), "foo"));
         assertFalse(ConditionOperation.EQUAL.anyLeftMatch(List.of("foo", "bar"), "baz"));
-        assertFalse(ConditionOperation.EQUAL.anyLeftMatch(List.of((String)null), "baz"));
+        List<String> nullList = new ArrayList<>();
+        nullList.add(null);
+        assertFalse(ConditionOperation.EQUAL.anyLeftMatch(nullList, "baz"));
+        assertTrue(ConditionOperation.EQUAL.anyLeftMatch(Arrays.asList("baz", null), "baz"));
     }
 
     @Test
     void testAnyLeftMatchContain() {
         assertTrue(ConditionOperation.CONTAIN.anyLeftMatch(List.of("foobar", "baz"), "foo"));
         assertFalse(ConditionOperation.CONTAIN.anyLeftMatch(List.of("bar", "baz"), "foo"));
-        assertFalse(ConditionOperation.CONTAIN.anyLeftMatch(List.of((String)null), "foo"));
+        List<String> nullList = new ArrayList<>();
+        nullList.add(null);
+        assertFalse(ConditionOperation.CONTAIN.anyLeftMatch(nullList, "foo"));
+        assertTrue(ConditionOperation.CONTAIN.anyLeftMatch(Arrays.asList("bazooka", null), "baz"));
     }
 
     @Test

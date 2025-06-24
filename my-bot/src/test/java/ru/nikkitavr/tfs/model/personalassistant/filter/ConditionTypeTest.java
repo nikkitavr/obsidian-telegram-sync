@@ -1,13 +1,11 @@
 package ru.nikkitavr.tfs.model.personalassistant.filter;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
-import ru.nikkitavr.tfs.model.personalassistant.Message;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.List;
+import ru.nikkitavr.tfs.model.personalassistant.Message;
 
 class ConditionTypeTest {
     @Test
@@ -89,13 +87,6 @@ class ConditionTypeTest {
     }
 
     @Test
-    void testForwardFrom_TODO() {
-        // TODO: реализовать тесты, когда будет реализована логика FORWARD_FROM
-        Message msg = new Message();
-        assertTrue(ConditionType.FORWARD_FROM.match(msg, ConditionOperation.EQUAL, "any")); // сейчас всегда true
-    }
-
-    @Test
     void testUserFullNameVariants() {
         User user = new User();
         user.setId(123L);
@@ -147,7 +138,7 @@ class ConditionTypeTest {
         assertTrue(ConditionType.FORWARD_FROM.match(msg2, ConditionOperation.EQUAL, "222"));
         assertTrue(ConditionType.FORWARD_FROM.match(msg2, ConditionOperation.EQUAL, "Fwd Channel"));
         assertTrue(ConditionType.FORWARD_FROM.match(msg2, ConditionOperation.EQUAL, "fwdchannel"));
-        assertTrue(ConditionType.FORWARD_FROM.match(msg2, ConditionOperation.EQUAL, "Fwd Channelsig"));
+        assertTrue(ConditionType.FORWARD_FROM.match(msg2, ConditionOperation.EQUAL, "Fwd Channel (sig)"));
         assertTrue(ConditionType.FORWARD_FROM.match(msg2, ConditionOperation.CONTAIN, "sig"));
         assertFalse(ConditionType.FORWARD_FROM.match(msg2, ConditionOperation.EQUAL, "other"));
 

@@ -1,13 +1,15 @@
 package ru.nikkitavr.tfs.model.personalassistant.filter;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
-import ru.nikkitavr.tfs.model.personalassistant.Message;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
-
-import static org.junit.jupiter.api.Assertions.*;
+import ru.nikkitavr.tfs.model.personalassistant.Message;
 
 class MessageFilterTest {
+
+    //TODO: any должен парситься без =value
     @Test
     void testAll() {
         MessageFilter filter = new MessageFilter("{{all=any}}");
@@ -23,12 +25,16 @@ class MessageFilterTest {
         user.setLastName("User");
         Message msg = new Message();
         msg.setFrom(user);
+
         MessageFilter filter = new MessageFilter("{{user=123}}");
         assertTrue(filter.match(msg));
+
         filter = new MessageFilter("{{user=testuser}}");
         assertTrue(filter.match(msg));
+
         filter = new MessageFilter("{{user=other}}");
         assertFalse(filter.match(msg));
+
         filter = new MessageFilter("{{user~Test}}");
         assertTrue(filter.match(msg));
     }
@@ -41,9 +47,11 @@ class MessageFilterTest {
         Message msg = new Message();
         msg.setChat(chat);
         msg.setText("hello world");
-        MessageFilter filter = new MessageFilter("{{chat=My Chat}} && {{content~hello}}");
+
+        MessageFilter filter = new MessageFilter("{{chat=My Chat}} and {{content~hello}}");
         assertTrue(filter.match(msg));
-        filter = new MessageFilter("{{chat=My Chat}} && {{content~bye}}");
+
+        filter = new MessageFilter("{{chat=My Chat}} and {{content~bye}}");
         assertFalse(filter.match(msg));
     }
 
@@ -77,14 +85,6 @@ class MessageFilterTest {
     void testNullCases() {
         MessageFilter filter = new MessageFilter("{{user=any}}");
         assertFalse(filter.match(null));
-    }
-
-    @Test
-    void testForwardFrom_TODO() {
-        // TODO: реализовать тесты, когда будет реализована логика FORWARD_FROM
-        Message msg = new Message();
-        MessageFilter filter = new MessageFilter("{{forwardFrom=any}}");
-        assertTrue(filter.match(msg)); // сейчас всегда true
     }
 
     @Test
@@ -130,7 +130,7 @@ class MessageFilterTest {
         assertTrue(filter2.match(msg2));
         filter2 = new MessageFilter("{{forwardFrom=fwdchannel}} ");
         assertTrue(filter2.match(msg2));
-        filter2 = new MessageFilter("{{forwardFrom=Fwd Channelsig}} ");
+        filter2 = new MessageFilter("{{forwardFrom=Fwd Channel (sig)}} ");
         assertTrue(filter2.match(msg2));
         filter2 = new MessageFilter("{{forwardFrom~sig}} ");
         assertTrue(filter2.match(msg2));

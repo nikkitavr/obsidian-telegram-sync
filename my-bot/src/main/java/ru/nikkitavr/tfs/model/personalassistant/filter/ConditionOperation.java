@@ -32,6 +32,9 @@ public enum ConditionOperation {
   }
 
   public boolean match(String left, String right) {
+    if(left == null) {
+      return false;
+    }
     return switch (this) {
       case EQUAL -> left.equals(right);
       case CONTAIN -> left.contains(right);

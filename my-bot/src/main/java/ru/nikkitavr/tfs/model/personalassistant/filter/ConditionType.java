@@ -1,7 +1,6 @@
 package ru.nikkitavr.tfs.model.personalassistant.filter;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import lombok.Getter;
@@ -25,7 +24,7 @@ public enum ConditionType {
     String fullName = mergeToFullName(firstName, lastName);
     String userId = String.valueOf(user.getId());
     String username = user.getUserName();
-    return operation.anyLeftMatch(List.of(username, userId, firstName, lastName, fullName), value);
+    return operation.anyLeftMatch(Arrays.asList(username, userId, firstName, lastName, fullName), value);
   })),
 
   CHAT("chat", ((message, operation, value) -> {
@@ -36,7 +35,7 @@ public enum ConditionType {
     String chatId = String.valueOf(chat.getId());
     String chatTitle = chat.getTitle();
     String chatUsername = chat.getUserName();
-    return operation.anyLeftMatch(List.of(chatId, chatTitle, chatUsername), value);
+    return operation.anyLeftMatch(Arrays.asList(chatId, chatTitle, chatUsername), value);
   })),
 
   TOPIC("topic", ((message, operation, value) -> {
@@ -57,16 +56,16 @@ public enum ConditionType {
       String fullName = mergeToFullName(firstName, lastName);
       String userId = String.valueOf(fwdUser.getId());
       String username = fwdUser.getUserName();
-      return operation.anyLeftMatch(List.of(username, userId, firstName, lastName,  fullName), value);
+      return operation.anyLeftMatch(Arrays.asList(username, userId, firstName, lastName,  fullName), value);
     }
     // 2. Если есть forwarded chat (канал)
     if (message.getForwardFromChat() != null) {
       Chat fwdChat = message.getForwardFromChat();
       String chatId = String.valueOf(fwdChat.getId());
       String chatTitle = fwdChat.getTitle();
-      String chatTitleWithForwardSignature = chatTitle + message.getForwardSignature() != null ? message.getForwardSignature() : "";
+      String chatTitleWithForwardSignature = chatTitle + (message.getForwardSignature() != null ? " (%s)".formatted(message.getForwardSignature()) : "");
       String chatUsername = fwdChat.getUserName();
-      return operation.anyLeftMatch(List.of(chatId, chatTitle, chatTitleWithForwardSignature, chatUsername), value);
+      return operation.anyLeftMatch(Arrays.asList(chatId, chatTitle, chatTitleWithForwardSignature, chatUsername), value);
     }
     // 3. Если есть forwardedSenderName
     if (message.getForwardSenderName() != null) {
@@ -80,7 +79,7 @@ public enum ConditionType {
       String fullName = mergeToFullName(firstName, lastName);
       String userId = String.valueOf(from.getId());
       String username = from.getUserName();
-      return operation.anyLeftMatch(List.of(username, userId, firstName, lastName, fullName), value);
+      return operation.anyLeftMatch(Arrays.asList(username, userId, firstName, lastName, fullName), value);
     }
     return false;
   })),
@@ -92,7 +91,7 @@ public enum ConditionType {
 
     String text = message.getText();
     String caption = message.getCaption();
-    return operation.anyLeftMatch(List.of(text, caption), value);
+    return operation.anyLeftMatch(Arrays.asList(text, caption), value);
   })),
 
   VOICE_TRANSCRIPT("voiceTranscript", ((message, operation, value) -> {
