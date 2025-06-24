@@ -24,6 +24,14 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 import ru.nikkitavr.tfs.infra.telegram.exception.UIException;
 import ru.nikkitavr.tfs.infra.telegram.exception.WrongCommandUsageException;
 import ru.nikkitavr.tfs.model.personalassistant.message.Message;
+import ru.nikkitavr.tfs.model.personalassistant.message.TelegramChat;
+import ru.nikkitavr.tfs.model.personalassistant.message.TelegramUser;
+import ru.nikkitavr.tfs.model.personalassistant.message.files.Audio;
+import ru.nikkitavr.tfs.model.personalassistant.message.files.Document;
+import ru.nikkitavr.tfs.model.personalassistant.message.files.Photo;
+import ru.nikkitavr.tfs.model.personalassistant.message.files.Video;
+import ru.nikkitavr.tfs.model.personalassistant.message.files.VideoCircle;
+import ru.nikkitavr.tfs.model.personalassistant.message.files.Voice;
 import ru.nikkitavr.tfs.model.telegram.BotCommand;
 import static ru.nikkitavr.tfs.model.telegram.BotReactions.EDITED_MESSAGE_PROCESSED_EMOJI;
 import static ru.nikkitavr.tfs.model.telegram.BotReactions.NEW_MESSAGE_PROCESSED_EMOJI;
@@ -147,32 +155,135 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
             .setMessageId(botMessage.getMessageId())
             .setMediaGroupId(botMessage.getMediaGroupId())
             .setDate(TimeUtils.toInstant(botMessage.getDate()))
-
-
             .setText(botMessage.getText())
             .setCaption(botMessage.getCaption())
-            //.setVoice(downloadFile())
-            //.setVoiceTranscription()
-            //.setVideoCircle()
-            //.setDocument()
-            //.setPhoto()
-            //.setVideo()
-            //.setAudio()
-
             .setMessageThreadId(botMessage.getMessageThreadId())
-            //.setFrom()
             .setEditDate(TimeUtils.toInstant(botMessage.getEditDate()))
             .setForwardFromMessageId(botMessage.getForwardFromMessageId())
-            //.setChat()
-            //.setForwardFrom()
-            //.setForwardFromChat()
             .setForwardDate(TimeUtils.toInstant(botMessage.getForwardDate()))
             .setForwardSenderName(botMessage.getForwardSenderName())
-            //.setSenderChat()
             .setIsTopicMessage(botMessage.getIsTopicMessage());
 
-        if (botMessage.getIsTopicMessage()) {
-            Optional<String> title = topicTitleService.getTitleForTopic(botMessage.getChatId(), botMessage.getMessageThreadId());
+        // Обработка отправителя (from)
+        if (botMessage.getFrom() != null) {
+            TelegramUser from = new TelegramUser();
+            from.setId(String.valueOf(botMessage.getFrom().getId()));
+            from.setFirstName(botMessage.getFrom().getFirstName());
+            from.setLastName(botMessage.getFrom().getLastName());
+            from.setUserName(botMessage.getFrom().getUserName());
+            msg.setFrom(from);
+        }
+
+        // Обработка чата
+        if (botMessage.getChat() != null) {
+            TelegramChat chat = new TelegramChat();
+            chat.setId(String.valueOf(botMessage.getChat().getId()));
+            chat.setTitle(botMessage.getChat().getTitle());
+            chat.setUserName(botMessage.getChat().getUserName());
+            msg.setChat(chat);
+        }
+
+        // Обработка пересланного отправителя
+        if (botMessage.getForwardFrom() != null) {
+            TelegramUser forwardFrom = new TelegramUser();
+            forwardFrom.setId(String.valueOf(botMessage.getForwardFrom().getId()));
+            forwardFrom.setFirstName(botMessage.getForwardFrom().getFirstName());
+            forwardFrom.setLastName(botMessage.getForwardFrom().getLastName());
+            forwardFrom.setUserName(botMessage.getForwardFrom().getUserName());
+            msg.setForwardFrom(forwardFrom);
+        }
+
+        // Обработка пересланного чата
+        if (botMessage.getForwardFromChat() != null) {
+            TelegramChat forwardFromChat = new TelegramChat();
+            forwardFromChat.setId(String.valueOf(botMessage.getForwardFromChat().getId()));
+            forwardFromChat.setTitle(botMessage.getForwardFromChat().getTitle());
+            forwardFromChat.setUserName(botMessage.getForwardFromChat().getUserName());
+            msg.setForwardFromChat(forwardFromChat);
+        }
+
+        // Обработка подписи пересланного сообщения
+        if (botMessage.getForwardSignature() != null) {
+            msg.setForwardSignature(botMessage.getForwardSignature());
+        }
+
+        // Обработка отправителя-чата
+        if (botMessage.getSenderChat() != null) {
+            TelegramChat senderChat = new TelegramChat();
+            senderChat.setId(String.valueOf(botMessage.getSenderChat().getId()));
+            senderChat.setTitle(botMessage.getSenderChat().getTitle());
+            senderChat.setUserName(botMessage.getSenderChat().getUserName());
+            msg.setSenderChat(senderChat);
+        }
+
+        // Обработка голосовых сообщений
+        if (botMessage.getVoice() != null) {
+            Voice voice = 
+                new Voice();
+            voice.setFileId(botMessage.getVoice().getFileId());
+            voice.setFileUniqueId(botMessage.getVoice().getFileUniqueId());
+            voice.setMimeType(botMessage.getVoice().getMimeType());
+            msg.setVoice(voice);
+        }
+
+        // Обработка фотографий
+        if (botMessage.getPhoto() != null && !botMessage.getPhoto().isEmpty()) {
+            Photo photo = 
+                new Photo();
+            // Берем последний элемент (наилучшее качество)
+            org.telegram.telegrambots.meta.api.objects.PhotoSize bestPhoto = 
+                botMessage.getPhoto().get(botMessage.getPhoto().size() - 1);
+            photo.setFileId(bestPhoto.getFileId());
+            photo.setFileUniqueId(bestPhoto.getFileUniqueId());
+            msg.setPhoto(photo);
+        }
+
+        // Обработка документов
+        if (botMessage.getDocument() != null) {
+            Document document = 
+                new Document();
+            document.setFileId(botMessage.getDocument().getFileId());
+            document.setFileUniqueId(botMessage.getDocument().getFileUniqueId());
+            document.setFileName(botMessage.getDocument().getFileName());
+            document.setMimeType(botMessage.getDocument().getMimeType());
+            msg.setDocument(document);
+        }
+
+        // Обработка видео
+        if (botMessage.getVideo() != null) {
+            Video video = 
+                new Video();
+            video.setFileId(botMessage.getVideo().getFileId());
+            video.setFileUniqueId(botMessage.getVideo().getFileUniqueId());
+            video.setMimeType(botMessage.getVideo().getMimeType());
+            msg.setVideo(video);
+        }
+
+        // Обработка аудио
+        if (botMessage.getAudio() != null) {
+            Audio audio = 
+                new Audio();
+            audio.setFileId(botMessage.getAudio().getFileId());
+            audio.setFileUniqueId(botMessage.getAudio().getFileUniqueId());
+            audio.setMimeType(botMessage.getAudio().getMimeType());
+            msg.setAudio(audio);
+        }
+
+        // Обработка видеокружков (video note)
+        if (botMessage.getVideoNote() != null) {
+            VideoCircle videoCircle = 
+                new VideoCircle();
+            videoCircle.setFileId(botMessage.getVideoNote().getFileId());
+            videoCircle.setFileUniqueId(botMessage.getVideoNote().getFileUniqueId());
+            msg.setVideoCircle(videoCircle);
+        }
+
+        // Обработка топиков
+        if (botMessage.getIsTopicMessage() != null && botMessage.getIsTopicMessage()) {
+            Optional<String> title = topicTitleService.getTitleForTopic(
+                botMessage.getChatId(), 
+                botMessage.getMessageThreadId()
+            );
             if (title.isEmpty()) {
                 sendMessage(botMessage.getChatId(), botMessage.getMessageThreadId(),
                     "Please specify the title for this topic using command %s <title>"
@@ -182,10 +293,7 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
                 msg.setMessageThreadTitle(title.get());
             }
         }
-        System.out.println(msg);
 
-
-        System.out.println("debug");
         return msg;
     }
 
