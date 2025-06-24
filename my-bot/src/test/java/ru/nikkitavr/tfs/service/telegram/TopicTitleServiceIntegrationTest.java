@@ -8,12 +8,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.BindMode;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.nikkitavr.tfs.infra.db.ChatTitlesRepository;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
 
@@ -22,21 +21,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Testcontainers
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
+@ActiveProfiles("test")
 public class TopicTitleServiceIntegrationTest {
 
     @Container
-    public static GenericContainer<?> sqlite = new GenericContainer<>(DockerImageName.parse("nouchka/sqlite3:latest"))
-            .withExposedPorts(3306)
-            .withClasspathResourceMapping("/schema.sql", "/docker-entrypoint-initdb.d/schema.sql", BindMode.READ_ONLY);
+    public static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16")
+            .withDatabaseName("test-db")
+            .withUsername("test")
+            .withPassword("test");
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        String jdbcUrl = String.format("jdbc:sqlite:%s", "/tmp/test-db.sqlite");
-        registry.add("spring.datasource.url", () -> jdbcUrl);
-        registry.add("spring.datasource.driver-class-name", () -> "org.sqlite.JDBC");
-        registry.add("spring.datasource.username", () -> "sa");
-        registry.add("spring.datasource.password", () -> "");
-        registry.add("spring.jpa.database-platform", () -> "org.hibernate.dialect.SQLiteDialect");
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
+        registry.add("spring.jpa.database-platform", () -> "org.hibernate.dialect.PostgreSQLDialect");
     }
 
     @Autowired

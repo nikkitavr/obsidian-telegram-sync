@@ -2,14 +2,12 @@ spring:
   application:
     name: my-bot
   datasource:
-    url: jdbc:sqlite:./data/telegram-bot.db
-    driver-class-name: org.sqlite.JDBC
-    username: sa
-    password:
+    url: jdbc:postgresql://localhost:5432/telegram-bot
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
   jpa:
-    hibernate:
-      ddl-auto: update
-    database-platform: org.hibernate.dialect.SQLiteDialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     properties:
       hibernate:
