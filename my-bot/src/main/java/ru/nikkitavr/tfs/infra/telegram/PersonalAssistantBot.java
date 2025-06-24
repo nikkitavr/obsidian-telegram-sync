@@ -162,12 +162,13 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
             .setForwardFromMessageId(botMessage.getForwardFromMessageId())
             .setForwardDate(TimeUtils.toInstant(botMessage.getForwardDate()))
             .setForwardSenderName(botMessage.getForwardSenderName())
-            .setIsTopicMessage(botMessage.getIsTopicMessage());
+            .setIsTopicMessage(botMessage.getIsTopicMessage())
+            .setForwardSignature(botMessage.getForwardSignature());
 
         // Обработка отправителя (from)
         if (botMessage.getFrom() != null) {
             TelegramUser from = new TelegramUser();
-            from.setId(String.valueOf(botMessage.getFrom().getId()));
+            from.setId(botMessage.getFrom().getId());
             from.setFirstName(botMessage.getFrom().getFirstName());
             from.setLastName(botMessage.getFrom().getLastName());
             from.setUserName(botMessage.getFrom().getUserName());
@@ -177,7 +178,7 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
         // Обработка чата
         if (botMessage.getChat() != null) {
             TelegramChat chat = new TelegramChat();
-            chat.setId(String.valueOf(botMessage.getChat().getId()));
+            chat.setId(botMessage.getChat().getId());
             chat.setTitle(botMessage.getChat().getTitle());
             chat.setUserName(botMessage.getChat().getUserName());
             msg.setChat(chat);
@@ -186,7 +187,7 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
         // Обработка пересланного отправителя
         if (botMessage.getForwardFrom() != null) {
             TelegramUser forwardFrom = new TelegramUser();
-            forwardFrom.setId(String.valueOf(botMessage.getForwardFrom().getId()));
+            forwardFrom.setId(botMessage.getForwardFrom().getId());
             forwardFrom.setFirstName(botMessage.getForwardFrom().getFirstName());
             forwardFrom.setLastName(botMessage.getForwardFrom().getLastName());
             forwardFrom.setUserName(botMessage.getForwardFrom().getUserName());
@@ -196,30 +197,31 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
         // Обработка пересланного чата
         if (botMessage.getForwardFromChat() != null) {
             TelegramChat forwardFromChat = new TelegramChat();
-            forwardFromChat.setId(String.valueOf(botMessage.getForwardFromChat().getId()));
+            forwardFromChat.setId(botMessage.getForwardFromChat().getId());
             forwardFromChat.setTitle(botMessage.getForwardFromChat().getTitle());
             forwardFromChat.setUserName(botMessage.getForwardFromChat().getUserName());
             msg.setForwardFromChat(forwardFromChat);
         }
 
-        // Обработка подписи пересланного сообщения
-        if (botMessage.getForwardSignature() != null) {
-            msg.setForwardSignature(botMessage.getForwardSignature());
-        }
-
         // Обработка отправителя-чата
         if (botMessage.getSenderChat() != null) {
             TelegramChat senderChat = new TelegramChat();
-            senderChat.setId(String.valueOf(botMessage.getSenderChat().getId()));
+            senderChat.setId(botMessage.getSenderChat().getId());
             senderChat.setTitle(botMessage.getSenderChat().getTitle());
             senderChat.setUserName(botMessage.getSenderChat().getUserName());
             msg.setSenderChat(senderChat);
         }
 
+        // Обработка ответного сообщения
+        if (botMessage.getReplyToMessage() != null) {
+            // Рекурсивно конвертируем ответное сообщение
+            Message replyMessage = toAssistantMessage(botMessage.getReplyToMessage());
+            msg.setReplyToMessage(replyMessage);
+        }
+
         // Обработка голосовых сообщений
         if (botMessage.getVoice() != null) {
-            Voice voice = 
-                new Voice();
+            Voice voice = new Voice();
             voice.setFileId(botMessage.getVoice().getFileId());
             voice.setFileUniqueId(botMessage.getVoice().getFileUniqueId());
             voice.setMimeType(botMessage.getVoice().getMimeType());
@@ -228,8 +230,7 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
 
         // Обработка фотографий
         if (botMessage.getPhoto() != null && !botMessage.getPhoto().isEmpty()) {
-            Photo photo = 
-                new Photo();
+            Photo photo = new Photo();
             // Берем последний элемент (наилучшее качество)
             org.telegram.telegrambots.meta.api.objects.PhotoSize bestPhoto = 
                 botMessage.getPhoto().get(botMessage.getPhoto().size() - 1);
@@ -240,8 +241,7 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
 
         // Обработка документов
         if (botMessage.getDocument() != null) {
-            Document document = 
-                new Document();
+            Document document = new Document();
             document.setFileId(botMessage.getDocument().getFileId());
             document.setFileUniqueId(botMessage.getDocument().getFileUniqueId());
             document.setFileName(botMessage.getDocument().getFileName());
@@ -251,28 +251,27 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
 
         // Обработка видео
         if (botMessage.getVideo() != null) {
-            Video video = 
-                new Video();
+            Video video = new Video();
             video.setFileId(botMessage.getVideo().getFileId());
             video.setFileUniqueId(botMessage.getVideo().getFileUniqueId());
             video.setMimeType(botMessage.getVideo().getMimeType());
+            video.setFileName(botMessage.getVideo().getFileName());
             msg.setVideo(video);
         }
 
         // Обработка аудио
         if (botMessage.getAudio() != null) {
-            Audio audio = 
-                new Audio();
+            Audio audio = new Audio();
             audio.setFileId(botMessage.getAudio().getFileId());
             audio.setFileUniqueId(botMessage.getAudio().getFileUniqueId());
             audio.setMimeType(botMessage.getAudio().getMimeType());
+            audio.setFileName(botMessage.getAudio().getFileName());
             msg.setAudio(audio);
         }
 
         // Обработка видеокружков (video note)
         if (botMessage.getVideoNote() != null) {
-            VideoCircle videoCircle = 
-                new VideoCircle();
+            VideoCircle videoCircle = new VideoCircle();
             videoCircle.setFileId(botMessage.getVideoNote().getFileId());
             videoCircle.setFileUniqueId(botMessage.getVideoNote().getFileUniqueId());
             msg.setVideoCircle(videoCircle);
@@ -280,10 +279,7 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
 
         // Обработка топиков
         if (botMessage.getIsTopicMessage() != null && botMessage.getIsTopicMessage()) {
-            Optional<String> title = topicTitleService.getTitleForTopic(
-                botMessage.getChatId(), 
-                botMessage.getMessageThreadId()
-            );
+            Optional<String> title = topicTitleService.getTitleForTopic(botMessage.getChatId(), botMessage.getMessageThreadId());
             if (title.isEmpty()) {
                 sendMessage(botMessage.getChatId(), botMessage.getMessageThreadId(),
                     "Please specify the title for this topic using command %s <title>"
