@@ -87,6 +87,12 @@ public class Message {
 
   //Подставим из базы при чтении сообщения
   private String messageThreadTitle;
+
+  /**
+   * Optional.
+   * Post author signature for messages forwarded from channel chats
+   */
+  private String forwardSignature;
   /**
    * Optional.
    * Sender, can be empty for messages sent to channels

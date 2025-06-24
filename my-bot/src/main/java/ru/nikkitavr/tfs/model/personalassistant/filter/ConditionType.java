@@ -9,6 +9,7 @@ import org.apache.commons.lang3.function.TriFunction;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
 import ru.nikkitavr.tfs.model.personalassistant.Message;
+import static ru.nikkitavr.tfs.utils.CommonUtils.mergeToFullName;
 
 public enum ConditionType {
   ALL("all", ((message, operation, value) -> true)),
@@ -21,17 +22,10 @@ public enum ConditionType {
 
     String firstName = user.getFirstName();
     String lastName = user.getLastName();
-    String fullName = null;
-    if (firstName != null) {
-      fullName = firstName;
-      if (lastName != null) {
-        fullName += " " + lastName;
-      }
-    }
-    
+    String fullName = mergeToFullName(firstName, lastName);
     String userId = String.valueOf(user.getId());
     String username = user.getUserName();
-    return operation.anyLeftMatch(List.of(username, userId, fullName), value);
+    return operation.anyLeftMatch(List.of(username, userId, firstName, lastName, fullName), value);
   })),
 
   CHAT("chat", ((message, operation, value) -> {
@@ -55,28 +49,24 @@ public enum ConditionType {
     if (message == null) {
       return false;
     }
-    // Аналог isForwardFromFiltered из obsidian-plugin
     // 1. Если есть forwarded user
     if (message.getForwardFrom() != null) {
       User fwdUser = message.getForwardFrom();
-      String fullName = null;
-      if (fwdUser.getFirstName() != null) {
-        fullName = fwdUser.getFirstName();
-        if (fwdUser.getLastName() != null) {
-          fullName += " " + fwdUser.getLastName();
-        }
-      }
+      String firstName = fwdUser.getFirstName();
+      String lastName = fwdUser.getLastName();
+      String fullName = mergeToFullName(firstName, lastName);
       String userId = String.valueOf(fwdUser.getId());
       String username = fwdUser.getUserName();
-      return operation.anyLeftMatch(List.of(username, userId, fullName), value);
+      return operation.anyLeftMatch(List.of(username, userId, firstName, lastName,  fullName), value);
     }
     // 2. Если есть forwarded chat (канал)
     if (message.getForwardFromChat() != null) {
       Chat fwdChat = message.getForwardFromChat();
       String chatId = String.valueOf(fwdChat.getId());
       String chatTitle = fwdChat.getTitle();
+      String chatTitleWithForwardSignature = chatTitle + message.getForwardSignature() != null ? message.getForwardSignature() : "";
       String chatUsername = fwdChat.getUserName();
-      return operation.anyLeftMatch(List.of(chatId, chatTitle, chatUsername), value);
+      return operation.anyLeftMatch(List.of(chatId, chatTitle, chatTitleWithForwardSignature, chatUsername), value);
     }
     // 3. Если есть forwardedSenderName
     if (message.getForwardSenderName() != null) {
@@ -85,16 +75,12 @@ public enum ConditionType {
     // 4. Fallback: from (анонимные админы и т.д.)
     if (message.getFrom() != null) {
       User from = message.getFrom();
-      String fullName = null;
-      if (from.getFirstName() != null) {
-        fullName = from.getFirstName();
-        if (from.getLastName() != null) {
-          fullName += " " + from.getLastName();
-        }
-      }
+      String firstName = from.getFirstName();
+      String lastName = from.getLastName();
+      String fullName = mergeToFullName(firstName, lastName);
       String userId = String.valueOf(from.getId());
       String username = from.getUserName();
-      return operation.anyLeftMatch(List.of(username, userId, fullName), value);
+      return operation.anyLeftMatch(List.of(username, userId, firstName, lastName, fullName), value);
     }
     return false;
   })),
