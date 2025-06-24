@@ -1,19 +1,16 @@
 package ru.nikkitavr.tfs.model.personalassistant.message;
 
 import java.time.Instant;
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import org.telegram.telegrambots.meta.api.objects.Audio;
-import org.telegram.telegrambots.meta.api.objects.Chat;
-import org.telegram.telegrambots.meta.api.objects.Document;
-import org.telegram.telegrambots.meta.api.objects.PhotoSize;
-import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.api.objects.Video;
-import org.telegram.telegrambots.meta.api.objects.VideoNote;
-import org.telegram.telegrambots.meta.api.objects.Voice;
+import ru.nikkitavr.tfs.model.personalassistant.message.files.Audio;
+import ru.nikkitavr.tfs.model.personalassistant.message.files.Document;
+import ru.nikkitavr.tfs.model.personalassistant.message.files.Photo;
+import ru.nikkitavr.tfs.model.personalassistant.message.files.Video;
+import ru.nikkitavr.tfs.model.personalassistant.message.files.VideoCircle;
+import ru.nikkitavr.tfs.model.personalassistant.message.files.Voice;
 
 @Getter
 @Setter
@@ -21,20 +18,6 @@ import org.telegram.telegrambots.meta.api.objects.Voice;
 @Accessors(chain = true)
 //TODO: change api entities to model objects
 public class Message {
-
-  /**
-   * Integer	Unique message identifier
-   */
-  private Integer messageId;
-  /**
-   * Optional.
-   * The unique identifier of a media message group this message belongs to
-   */
-  private String mediaGroupId;
-  /**
-   * Date the message was sent in Unix time
-   */
-  private Instant date;
 
   //message content
   /**
@@ -51,7 +34,7 @@ public class Message {
    * Optional.
    * Message is a photo, available sizes of the photo
    */
-  private List<PhotoSize> photo;
+  private Photo photo;
   /**
    * Optional.
    * Message is a video, information about the video
@@ -75,59 +58,56 @@ public class Message {
    * Optional.
    * Message is a video note, information about the video message
    */
-  private VideoNote videoCircle;
+  private VideoCircle videoCircle;
+  /**
+   * Date the message was sent in Unix time
+   */
+  private Instant date;
 
-  //meta info
+  //tg meta info
+  /**
+   * Integer	Unique message identifier
+   */
+  private Integer messageId;
+  /**
+   * Optional.
+   * The unique identifier of a media message group this message belongs to
+   */
+  private String mediaGroupId;
+  /**
+   * Optional.
+   * Sender, can be empty for messages sent to channels
+   */
+  private TelegramUser from;
+  /**
+   * Conversation the message belongs to
+   */
+  private TelegramChat chat;
+  /**
+   * Optional.
+   * True, if the message is sent to a forum topic
+   */
+  private Boolean isTopicMessage;
   /**
    * Optional.
    * Unique identifier of a message thread or a forum topic to which the message belongs;
    * for supergroups only
    */
   private Integer messageThreadId;
-
   //Подставим из базы при чтении сообщения
   private String messageThreadTitle;
-
-  /**
-   * Optional.
-   * Post author signature for messages forwarded from channel chats
-   */
-  private String forwardSignature;
-  /**
-   * Optional.
-   * Sender, can be empty for messages sent to channels
-   */
-  private User from;
   /**
    * Optional.
    * Date the message was last edited in Unix time
    */
   private Instant editDate;
-  /**
-   * Optional.
-   * For forwarded channel posts, identifier of the original message in the channel
-   */
-  private Integer forwardFromMessageId;
-  /**
-   * Conversation the message belongs to
-   */
-  private Chat chat;
+  private Message replyToMessage;
+
   /**
    * Optional.
    * For forwarded messages, sender of the original message
    */
-  private User forwardFrom;
-  /**
-   * Optional.
-   * For messages forwarded from channels or from anonymous administrators, information about the original sender chat
-   */
-  private Chat forwardFromChat;
-  /**
-   * Optional.
-   * For forwarded messages, date the original message was sent
-   */
-  private Instant forwardDate;
-  private Message replyToMessage;
+  private TelegramUser forwardFrom;
   /**
    * Optional.
    * Sender's name for messages forwarded from users who disallow adding a link to their account in forwarded messages.
@@ -135,17 +115,31 @@ public class Message {
   private String forwardSenderName;
   /**
    * Optional.
+   * Post author signature for messages forwarded from channel chats
+   */
+  private String forwardSignature;
+  /**
+   * Optional.
+   * For messages forwarded from channels or from anonymous administrators, information about the original sender chat
+   */
+  private TelegramChat forwardFromChat;
+  /**
+   * Optional.
+   * For forwarded channel posts, identifier of the original message in the channel
+   */
+  private Integer forwardFromMessageId;
+  /**
+   * Optional.
+   * For forwarded messages, date the original message was sent
+   */
+  private Instant forwardDate;
+
+  /**
+   * Optional.
    * Sender of the message, sent on behalf of a chat. The channel itself for channel messages.
    * The supergroup itself for messages from anonymous group administrators.
    * The linked channel for messages automatically forwarded to the discussion group
    */
-  private Chat senderChat;
-  /**
-   * Optional.
-   * True, if the message is sent to a forum topic
-   */
-  private Boolean isTopicMessage;
+  private TelegramChat senderChat;
 
-  //additional //TODO: понять что еще нужно добавить и где взять
-  private String voiceTranscription;
 }

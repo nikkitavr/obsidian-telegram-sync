@@ -5,17 +5,17 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import lombok.Getter;
 import org.apache.commons.lang3.function.TriFunction;
-import org.telegram.telegrambots.meta.api.objects.Chat;
-import org.telegram.telegrambots.meta.api.objects.User;
 import ru.nikkitavr.tfs.infra.telegram.exception.UIException;
 import ru.nikkitavr.tfs.model.personalassistant.message.Message;
+import ru.nikkitavr.tfs.model.personalassistant.message.TelegramChat;
+import ru.nikkitavr.tfs.model.personalassistant.message.TelegramUser;
 import static ru.nikkitavr.tfs.utils.CommonUtils.mergeToFullName;
 
 public enum ConditionType {
   ALL("all", ((message, operation, value) -> true)),
 
   USER("user", ((message, operation, value) -> {
-    User user = Optional.ofNullable(message).map(Message::getFrom).orElse(null);
+    TelegramUser user = Optional.ofNullable(message).map(Message::getFrom).orElse(null);
     if (user == null) {
       return false;
     }
@@ -29,7 +29,7 @@ public enum ConditionType {
   })),
 
   CHAT("chat", ((message, operation, value) -> {
-    Chat chat = Optional.ofNullable(message).map(Message::getChat).orElse(null);
+    TelegramChat chat = Optional.ofNullable(message).map(Message::getChat).orElse(null);
     if (chat == null) {
       return false;
     }
@@ -51,7 +51,7 @@ public enum ConditionType {
     }
     // 1. Если есть forwarded user
     if (message.getForwardFrom() != null) {
-      User fwdUser = message.getForwardFrom();
+      TelegramUser fwdUser = message.getForwardFrom();
       String firstName = fwdUser.getFirstName();
       String lastName = fwdUser.getLastName();
       String fullName = mergeToFullName(firstName, lastName);
@@ -61,7 +61,7 @@ public enum ConditionType {
     }
     // 2. Если есть forwarded chat (канал)
     if (message.getForwardFromChat() != null) {
-      Chat fwdChat = message.getForwardFromChat();
+      TelegramChat fwdChat = message.getForwardFromChat();
       String chatId = String.valueOf(fwdChat.getId());
       String chatTitle = fwdChat.getTitle();
       String chatTitleWithForwardSignature = chatTitle + (message.getForwardSignature() != null ? " (%s)".formatted(message.getForwardSignature()) : "");
@@ -74,7 +74,7 @@ public enum ConditionType {
     }
     // 4. Fallback: from (анонимные админы и т.д.)
     if (message.getFrom() != null) {
-      User from = message.getFrom();
+      TelegramUser from = message.getFrom();
       String firstName = from.getFirstName();
       String lastName = from.getLastName();
       String fullName = mergeToFullName(firstName, lastName);
@@ -96,8 +96,13 @@ public enum ConditionType {
   })),
 
   VOICE_TRANSCRIPT("voiceTranscript", ((message, operation, value) -> {
-    String transcript = Optional.ofNullable(message).map(Message::getVoiceTranscription).orElse(null);
-    return operation.match(transcript, value);
+    if (message == null) {
+      return false;
+    }
+    String voiceTranscript = message.getVoice().getTranscription();
+    String videoCircleTranscript = message.getVideoCircle().getTranscription();;
+
+    return operation.anyLeftMatch(Arrays.asList(voiceTranscript, videoCircleTranscript), value);
   }));
 
   @Getter
