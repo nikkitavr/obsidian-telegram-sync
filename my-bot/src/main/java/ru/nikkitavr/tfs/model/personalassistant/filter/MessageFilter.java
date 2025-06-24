@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.Getter;
 import org.mvel2.MVEL;
-import ru.nikkitavr.tfs.model.personalassistant.Message;
+import ru.nikkitavr.tfs.model.personalassistant.message.Message;
 
 public class MessageFilter {
   @JsonIgnore

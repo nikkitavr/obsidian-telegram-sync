@@ -8,7 +8,7 @@ import org.apache.commons.lang3.function.TriFunction;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
 import ru.nikkitavr.tfs.infra.telegram.exception.UIException;
-import ru.nikkitavr.tfs.model.personalassistant.Message;
+import ru.nikkitavr.tfs.model.personalassistant.message.Message;
 import static ru.nikkitavr.tfs.utils.CommonUtils.mergeToFullName;
 
 public enum ConditionType {

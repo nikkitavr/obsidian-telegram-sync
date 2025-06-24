@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
-import ru.nikkitavr.tfs.model.personalassistant.Message;
+import ru.nikkitavr.tfs.model.personalassistant.message.Message;
 
 class ConditionTypeTest {
     @Test

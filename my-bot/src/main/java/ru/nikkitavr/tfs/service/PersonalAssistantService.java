@@ -5,9 +5,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.nikkitavr.tfs.model.personalassistant.Message;
 import ru.nikkitavr.tfs.model.personalassistant.PersonalAssistantConfiguration;
 import static ru.nikkitavr.tfs.model.personalassistant.PersonalAssistantConfiguration.DistributionRule;
+import ru.nikkitavr.tfs.model.personalassistant.message.Message;
 import ru.nikkitavr.tfs.utils.FileSystemUtils;
 import ru.nikkitavr.tfs.utils.TemplateUtils;
 

@@ -1,4 +1,4 @@
-package ru.nikkitavr.tfs.model.personalassistant;
+package ru.nikkitavr.tfs.model.personalassistant.message;
 
 import java.time.Instant;
 import java.util.List;

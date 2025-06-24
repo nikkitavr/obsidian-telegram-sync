@@ -22,7 +22,7 @@ import org.telegram.telegrambots.meta.generics.BotSession;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 import ru.nikkitavr.tfs.infra.telegram.exception.UIException;
 import ru.nikkitavr.tfs.infra.telegram.exception.WrongCommandUsageException;
-import ru.nikkitavr.tfs.model.personalassistant.Message;
+import ru.nikkitavr.tfs.model.personalassistant.message.Message;
 import ru.nikkitavr.tfs.model.telegram.BotCommand;
 import static ru.nikkitavr.tfs.model.telegram.BotReactions.EDITED_MESSAGE_PROCESSED_EMOJI;
 import static ru.nikkitavr.tfs.model.telegram.BotReactions.NEW_MESSAGE_PROCESSED_EMOJI;
