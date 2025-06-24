@@ -96,7 +96,28 @@ class ConditionTypeTest {
     }
 
     @Test
-    void testForwardFromVariants() {
+    void testUserFullNameVariants() {
+        User user = new User();
+        user.setId(123L);
+        user.setUserName("testuser");
+        user.setFirstName("Test");
+        user.setLastName("User");
+        Message msg = new Message();
+        msg.setFrom(user);
+        // Проверяем все варианты
+        assertTrue(ConditionType.USER.match(msg, ConditionOperation.EQUAL, "testuser"));
+        assertTrue(ConditionType.USER.match(msg, ConditionOperation.EQUAL, "123"));
+        assertTrue(ConditionType.USER.match(msg, ConditionOperation.EQUAL, "Test"));
+        assertTrue(ConditionType.USER.match(msg, ConditionOperation.EQUAL, "User"));
+        assertTrue(ConditionType.USER.match(msg, ConditionOperation.EQUAL, "Test User"));
+        assertFalse(ConditionType.USER.match(msg, ConditionOperation.EQUAL, "other"));
+        assertTrue(ConditionType.USER.match(msg, ConditionOperation.CONTAIN, "test"));
+        assertTrue(ConditionType.USER.match(msg, ConditionOperation.CONTAIN, "User"));
+        assertFalse(ConditionType.USER.match(msg, ConditionOperation.CONTAIN, "other"));
+    }
+
+    @Test
+    void testForwardFromFullVariants() {
         // 1. Forwarded user
         User fwdUser = new User();
         fwdUser.setId(111L);
@@ -106,19 +127,28 @@ class ConditionTypeTest {
         Message msg1 = new Message();
         msg1.setForwardFrom(fwdUser);
         assertTrue(ConditionType.FORWARD_FROM.match(msg1, ConditionOperation.EQUAL, "fwduser"));
-        assertTrue(ConditionType.FORWARD_FROM.match(msg1, ConditionOperation.CONTAIN, "Fwd"));
+        assertTrue(ConditionType.FORWARD_FROM.match(msg1, ConditionOperation.EQUAL, "111"));
+        assertTrue(ConditionType.FORWARD_FROM.match(msg1, ConditionOperation.EQUAL, "Fwd"));
+        assertTrue(ConditionType.FORWARD_FROM.match(msg1, ConditionOperation.EQUAL, "User"));
+        assertTrue(ConditionType.FORWARD_FROM.match(msg1, ConditionOperation.EQUAL, "Fwd User"));
         assertFalse(ConditionType.FORWARD_FROM.match(msg1, ConditionOperation.EQUAL, "other"));
+        assertTrue(ConditionType.FORWARD_FROM.match(msg1, ConditionOperation.CONTAIN, "fwd"));
+        assertTrue(ConditionType.FORWARD_FROM.match(msg1, ConditionOperation.CONTAIN, "User"));
+        assertFalse(ConditionType.FORWARD_FROM.match(msg1, ConditionOperation.CONTAIN, "other"));
 
-        // 2. Forwarded chat
+        // 2. Forwarded chat + signature
         Chat fwdChat = new Chat();
         fwdChat.setId(222L);
         fwdChat.setTitle("Fwd Channel");
         fwdChat.setUserName("fwdchannel");
         Message msg2 = new Message();
         msg2.setForwardFromChat(fwdChat);
+        msg2.setForwardSignature("sig");
         assertTrue(ConditionType.FORWARD_FROM.match(msg2, ConditionOperation.EQUAL, "222"));
         assertTrue(ConditionType.FORWARD_FROM.match(msg2, ConditionOperation.EQUAL, "Fwd Channel"));
-        assertTrue(ConditionType.FORWARD_FROM.match(msg2, ConditionOperation.CONTAIN, "channel"));
+        assertTrue(ConditionType.FORWARD_FROM.match(msg2, ConditionOperation.EQUAL, "fwdchannel"));
+        assertTrue(ConditionType.FORWARD_FROM.match(msg2, ConditionOperation.EQUAL, "Fwd Channelsig"));
+        assertTrue(ConditionType.FORWARD_FROM.match(msg2, ConditionOperation.CONTAIN, "sig"));
         assertFalse(ConditionType.FORWARD_FROM.match(msg2, ConditionOperation.EQUAL, "other"));
 
         // 3. Forwarded sender name
@@ -137,7 +167,13 @@ class ConditionTypeTest {
         Message msg4 = new Message();
         msg4.setFrom(from);
         assertTrue(ConditionType.FORWARD_FROM.match(msg4, ConditionOperation.EQUAL, "fromuser"));
-        assertTrue(ConditionType.FORWARD_FROM.match(msg4, ConditionOperation.CONTAIN, "From"));
+        assertTrue(ConditionType.FORWARD_FROM.match(msg4, ConditionOperation.EQUAL, "333"));
+        assertTrue(ConditionType.FORWARD_FROM.match(msg4, ConditionOperation.EQUAL, "From"));
+        assertTrue(ConditionType.FORWARD_FROM.match(msg4, ConditionOperation.EQUAL, "User"));
+        assertTrue(ConditionType.FORWARD_FROM.match(msg4, ConditionOperation.EQUAL, "From User"));
         assertFalse(ConditionType.FORWARD_FROM.match(msg4, ConditionOperation.EQUAL, "other"));
+        assertTrue(ConditionType.FORWARD_FROM.match(msg4, ConditionOperation.CONTAIN, "from"));
+        assertTrue(ConditionType.FORWARD_FROM.match(msg4, ConditionOperation.CONTAIN, "User"));
+        assertFalse(ConditionType.FORWARD_FROM.match(msg4, ConditionOperation.CONTAIN, "other"));
     }
 } 

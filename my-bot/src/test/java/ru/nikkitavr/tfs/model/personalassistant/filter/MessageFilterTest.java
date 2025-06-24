@@ -88,7 +88,7 @@ class MessageFilterTest {
     }
 
     @Test
-    void testForwardFromVariants() {
+    void testForwardFromFullVariants() {
         // 1. Forwarded user
         User fwdUser = new User();
         fwdUser.setId(111L);
@@ -99,23 +99,40 @@ class MessageFilterTest {
         msg1.setForwardFrom(fwdUser);
         MessageFilter filter1 = new MessageFilter("{{forwardFrom=fwduser}} ");
         assertTrue(filter1.match(msg1));
-        filter1 = new MessageFilter("{{forwardFrom~Fwd}} ");
+        filter1 = new MessageFilter("{{forwardFrom=111}} ");
+        assertTrue(filter1.match(msg1));
+        filter1 = new MessageFilter("{{forwardFrom=Fwd}} ");
+        assertTrue(filter1.match(msg1));
+        filter1 = new MessageFilter("{{forwardFrom=User}} ");
+        assertTrue(filter1.match(msg1));
+        filter1 = new MessageFilter("{{forwardFrom=Fwd User}} ");
         assertTrue(filter1.match(msg1));
         filter1 = new MessageFilter("{{forwardFrom=other}} ");
         assertFalse(filter1.match(msg1));
+        filter1 = new MessageFilter("{{forwardFrom~fwd}} ");
+        assertTrue(filter1.match(msg1));
+        filter1 = new MessageFilter("{{forwardFrom~User}} ");
+        assertTrue(filter1.match(msg1));
+        filter1 = new MessageFilter("{{forwardFrom~other}} ");
+        assertFalse(filter1.match(msg1));
 
-        // 2. Forwarded chat
+        // 2. Forwarded chat + signature
         Chat fwdChat = new Chat();
         fwdChat.setId(222L);
         fwdChat.setTitle("Fwd Channel");
         fwdChat.setUserName("fwdchannel");
         Message msg2 = new Message();
         msg2.setForwardFromChat(fwdChat);
+        msg2.setForwardSignature("sig");
         MessageFilter filter2 = new MessageFilter("{{forwardFrom=222}} ");
         assertTrue(filter2.match(msg2));
         filter2 = new MessageFilter("{{forwardFrom=Fwd Channel}} ");
         assertTrue(filter2.match(msg2));
-        filter2 = new MessageFilter("{{forwardFrom~channel}} ");
+        filter2 = new MessageFilter("{{forwardFrom=fwdchannel}} ");
+        assertTrue(filter2.match(msg2));
+        filter2 = new MessageFilter("{{forwardFrom=Fwd Channelsig}} ");
+        assertTrue(filter2.match(msg2));
+        filter2 = new MessageFilter("{{forwardFrom~sig}} ");
         assertTrue(filter2.match(msg2));
         filter2 = new MessageFilter("{{forwardFrom=other}} ");
         assertFalse(filter2.match(msg2));
@@ -140,9 +157,21 @@ class MessageFilterTest {
         msg4.setFrom(from);
         MessageFilter filter4 = new MessageFilter("{{forwardFrom=fromuser}} ");
         assertTrue(filter4.match(msg4));
-        filter4 = new MessageFilter("{{forwardFrom~From}} ");
+        filter4 = new MessageFilter("{{forwardFrom=333}} ");
+        assertTrue(filter4.match(msg4));
+        filter4 = new MessageFilter("{{forwardFrom=From}} ");
+        assertTrue(filter4.match(msg4));
+        filter4 = new MessageFilter("{{forwardFrom=User}} ");
+        assertTrue(filter4.match(msg4));
+        filter4 = new MessageFilter("{{forwardFrom=From User}} ");
         assertTrue(filter4.match(msg4));
         filter4 = new MessageFilter("{{forwardFrom=other}} ");
+        assertFalse(filter4.match(msg4));
+        filter4 = new MessageFilter("{{forwardFrom~from}} ");
+        assertTrue(filter4.match(msg4));
+        filter4 = new MessageFilter("{{forwardFrom~User}} ");
+        assertTrue(filter4.match(msg4));
+        filter4 = new MessageFilter("{{forwardFrom~other}} ");
         assertFalse(filter4.match(msg4));
     }
 } 
