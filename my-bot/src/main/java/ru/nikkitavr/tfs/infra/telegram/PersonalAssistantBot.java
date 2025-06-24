@@ -103,7 +103,8 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
         } catch (UIException e) {
             sendMessage(message.getChatId(), message.getMessageThreadId(), e.getMessage());
         } catch (Exception e) {
-            sendMessage(message.getChatId(), message.getMessageThreadId(), Arrays.toString(e.getStackTrace()));
+            sendMessage(message.getChatId(), message.getMessageThreadId(), "Some unhandled error: \n\nMessage: %s \n\nCause: %s \n\nStackTrace: %s"
+                .formatted(e.getMessage(), e.getCause(), Arrays.toString(e.getStackTrace())));
             LOGGER.error("Some unhandled error", e);
         }
     }

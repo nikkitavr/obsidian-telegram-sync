@@ -6,7 +6,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.Getter;
+import org.mvel2.CompileException;
 import org.mvel2.MVEL;
+import ru.nikkitavr.tfs.infra.telegram.exception.UIException;
 import ru.nikkitavr.tfs.model.personalassistant.message.Message;
 
 public class MessageFilter {
@@ -23,7 +25,7 @@ public class MessageFilter {
     this.query = query;
     this.normalizedQuery = query
         .replaceAll("(?i)\\band\\b", "&&")
-        .replaceAll("(?i)\\bor\\b", "&&")
+        .replaceAll("(?i)\\bor\\b", "||")
         .replaceAll("(?i)\\bnot\\b",  "!");
   }
 
@@ -41,6 +43,10 @@ public class MessageFilter {
     }
     matcher.appendTail(resultExpression);
 
-    return MVEL.evalToBoolean(resultExpression.toString(), Map.of());
+    try {
+      return MVEL.evalToBoolean(resultExpression.toString(), Map.of());
+    } catch (CompileException e) {
+      throw new UIException("Please check filter query it might be wrong: %s. \n\n%s)".formatted(query, e.getMessage()));
+    }
   }
 }

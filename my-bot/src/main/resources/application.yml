@@ -2,7 +2,7 @@ spring:
   application:
     name: my-bot
   datasource:
-    url: jdbc:postgresql://localhost:5432/telegram-bot
+    url: jdbc:postgresql://localhost:5432/telegram_personal_assistant
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
