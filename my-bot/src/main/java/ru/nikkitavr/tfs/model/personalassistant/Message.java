@@ -84,6 +84,9 @@ public class Message {
    * for supergroups only
    */
   private Integer messageThreadId;
+
+  //Подставим из базы при чтении сообщения
+  private String messageThreadTitle;
   /**
    * Optional.
    * Sender, can be empty for messages sent to channels
