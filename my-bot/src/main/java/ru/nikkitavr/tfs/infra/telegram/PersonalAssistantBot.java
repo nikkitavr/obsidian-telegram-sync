@@ -100,7 +100,9 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
                 return;
             }
 
-            personalAssistantService.processMessage(toAssistantMessage(message));
+            Message assistantMessage = toAssistantMessage(message);
+            resolveThreadTitle(assistantMessage, message);
+            personalAssistantService.processMessage(assistantMessage);
             sendReaction(
                 message.getChatId(),
                 message.getMessageThreadId(),
@@ -277,6 +279,10 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
             msg.setVideoCircle(videoCircle);
         }
 
+        return msg;
+    }
+
+    public void resolveThreadTitle(Message message, org.telegram.telegrambots.meta.api.objects.Message botMessage) {
         // Обработка топиков
         if (botMessage.getIsTopicMessage() != null && botMessage.getIsTopicMessage()) {
             Optional<String> title = topicTitleService.getTitleForTopic(botMessage.getChatId(), botMessage.getMessageThreadId());
@@ -286,13 +292,10 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
                         .formatted(PersonalAssistantBotCommand.SET_TOPIC_TITLE.getValue())
                 );
             } else {
-                msg.setMessageThreadTitle(title.get());
+                message.setMessageThreadTitle(title.get());
             }
         }
-
-        return msg;
     }
-
 
     private void sendMessage(Long chatId, String text) {
         sendMessage(chatId, null, text, null);
