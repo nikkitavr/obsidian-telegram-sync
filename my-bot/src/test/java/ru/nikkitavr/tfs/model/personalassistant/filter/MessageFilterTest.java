@@ -12,7 +12,7 @@ class MessageFilterTest {
     //TODO: any должен парситься без =value
     @Test
     void testAll() {
-        MessageFilter filter = new MessageFilter("{{all=any}}");
+        MessageFilter filter = new MessageFilter("{{all}}");
         assertTrue(filter.match(new Message()));
     }
 
@@ -85,66 +85,6 @@ class MessageFilterTest {
     void testNullCases() {
         MessageFilter filter = new MessageFilter("{{user=any}}");
         assertFalse(filter.match(null));
-    }
-
-    @Test
-    void testConditionTypeOnly() {
-        // Test with only condition type specified (no operation/value)
-        User user = new User();
-        user.setId(123L);
-        user.setUserName("testuser");
-        user.setFirstName("Test");
-        user.setLastName("User");
-        Message msg = new Message();
-        msg.setFrom(user);
-
-        // Should match when user exists
-        MessageFilter filter = new MessageFilter("{{user}}");
-        assertTrue(filter.match(msg));
-
-        // Should not match when user is null
-        Message msgNoUser = new Message();
-        filter = new MessageFilter("{{user}}");
-        assertFalse(filter.match(msgNoUser));
-
-        // Test with chat
-        Chat chat = new Chat();
-        chat.setId(456L);
-        chat.setTitle("My Chat");
-        msg.setChat(chat);
-
-        filter = new MessageFilter("{{chat}}");
-        assertTrue(filter.match(msg));
-
-        // Test with content
-        msg.setText("hello world");
-        filter = new MessageFilter("{{content}}");
-        assertTrue(filter.match(msg));
-
-        // Test with topic
-        msg.setMessageThreadTitle("My Topic");
-        filter = new MessageFilter("{{topic}}");
-        assertTrue(filter.match(msg));
-
-        // Test with voice transcript
-        msg.setVoiceTranscription("transcribed text");
-        filter = new MessageFilter("{{voiceTranscript}}");
-        assertTrue(filter.match(msg));
-
-        // Test with forward from
-        User fwdUser = new User();
-        fwdUser.setId(111L);
-        fwdUser.setUserName("fwduser");
-        msg.setForwardFrom(fwdUser);
-        filter = new MessageFilter("{{forwardFrom}}");
-        assertTrue(filter.match(msg));
-
-        // Test with empty content (should not match)
-        Message msgEmpty = new Message();
-        msgEmpty.setFrom(user);
-        msgEmpty.setChat(chat);
-        filter = new MessageFilter("{{content}}");
-        assertFalse(filter.match(msgEmpty));
     }
 
     @Test

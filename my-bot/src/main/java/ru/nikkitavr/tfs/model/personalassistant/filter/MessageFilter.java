@@ -23,7 +23,8 @@ public class MessageFilter {
     this.query = query;
     this.normalizedQuery = query
         .replaceAll("(?i)\\band\\b", "&&")
-        .replaceAll("(?i)\\bor\\b",  "||");
+        .replaceAll("(?i)\\bor\\b", "&&")
+        .replaceAll("(?i)\\bnot\\b",  "!");
   }
 
   public boolean match(Message message) {
