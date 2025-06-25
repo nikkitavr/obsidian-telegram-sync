@@ -3,9 +3,10 @@ package ru.nikkitavr.tfs.model.personalassistant.filter;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
-import org.telegram.telegrambots.meta.api.objects.Chat;
-import org.telegram.telegrambots.meta.api.objects.User;
 import ru.nikkitavr.tfs.model.personalassistant.message.Message;
+import ru.nikkitavr.tfs.model.personalassistant.message.TelegramChat;
+import ru.nikkitavr.tfs.model.personalassistant.message.TelegramUser;
+import ru.nikkitavr.tfs.model.personalassistant.message.files.Voice;
 
 class ConditionTypeTest {
     @Test
@@ -15,7 +16,7 @@ class ConditionTypeTest {
 
     @Test
     void testUserEqualAndContain() {
-        User user = new User();
+        TelegramUser user = new TelegramUser();
         user.setId(123L);
         user.setUserName("testuser");
         user.setFirstName("Test");
@@ -33,7 +34,7 @@ class ConditionTypeTest {
 
     @Test
     void testChat() {
-        Chat chat = new Chat();
+        TelegramChat chat = new TelegramChat();
         chat.setId(456L);
         chat.setTitle("My Chat");
         chat.setUserName("chatuser");
@@ -70,8 +71,10 @@ class ConditionTypeTest {
 
     @Test
     void testVoiceTranscript() {
+        Voice voice = new Voice();
+        voice.setTranscription("voice text");
         Message msg = new Message();
-        msg.setVoiceTranscription("voice text");
+        msg.setVoice(voice);
         assertTrue(ConditionType.VOICE_TRANSCRIPT.match(msg, ConditionOperation.EQUAL, "voice text"));
         assertTrue(ConditionType.VOICE_TRANSCRIPT.match(msg, ConditionOperation.CONTAIN, "voice"));
         assertFalse(ConditionType.VOICE_TRANSCRIPT.match(msg, ConditionOperation.EQUAL, "other"));
@@ -88,7 +91,7 @@ class ConditionTypeTest {
 
     @Test
     void testUserFullNameVariants() {
-        User user = new User();
+        TelegramUser user = new TelegramUser();
         user.setId(123L);
         user.setUserName("testuser");
         user.setFirstName("Test");
@@ -110,7 +113,7 @@ class ConditionTypeTest {
     @Test
     void testForwardFromFullVariants() {
         // 1. Forwarded user
-        User fwdUser = new User();
+        TelegramUser fwdUser = new TelegramUser();
         fwdUser.setId(111L);
         fwdUser.setUserName("fwduser");
         fwdUser.setFirstName("Fwd");
@@ -128,7 +131,7 @@ class ConditionTypeTest {
         assertFalse(ConditionType.FORWARD_FROM.match(msg1, ConditionOperation.CONTAIN, "other"));
 
         // 2. Forwarded chat + signature
-        Chat fwdChat = new Chat();
+        TelegramChat fwdChat = new TelegramChat();
         fwdChat.setId(222L);
         fwdChat.setTitle("Fwd Channel");
         fwdChat.setUserName("fwdchannel");
@@ -150,7 +153,7 @@ class ConditionTypeTest {
         assertFalse(ConditionType.FORWARD_FROM.match(msg3, ConditionOperation.EQUAL, "other"));
 
         // 4. Fallback: from
-        User from = new User();
+        TelegramUser from = new TelegramUser();
         from.setId(333L);
         from.setUserName("fromuser");
         from.setFirstName("From");

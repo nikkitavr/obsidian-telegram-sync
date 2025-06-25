@@ -9,6 +9,8 @@ import ru.nikkitavr.tfs.infra.telegram.exception.UIException;
 import ru.nikkitavr.tfs.model.personalassistant.message.Message;
 import ru.nikkitavr.tfs.model.personalassistant.message.TelegramChat;
 import ru.nikkitavr.tfs.model.personalassistant.message.TelegramUser;
+import ru.nikkitavr.tfs.model.personalassistant.message.files.VideoCircle;
+import ru.nikkitavr.tfs.model.personalassistant.message.files.Voice;
 import static ru.nikkitavr.tfs.utils.CommonUtils.mergeToFullName;
 
 public enum ConditionType {
@@ -99,8 +101,8 @@ public enum ConditionType {
     if (message == null) {
       return false;
     }
-    String voiceTranscript = message.getVoice().getTranscription();
-    String videoCircleTranscript = message.getVideoCircle().getTranscription();;
+    String voiceTranscript = Optional.ofNullable(message.getVoice()).map(Voice::getTranscription).orElse(null);
+    String videoCircleTranscript = Optional.ofNullable(message.getVideoCircle()).map(VideoCircle::getTranscription).orElse(null);
 
     return operation.anyLeftMatch(Arrays.asList(voiceTranscript, videoCircleTranscript), value);
   }));

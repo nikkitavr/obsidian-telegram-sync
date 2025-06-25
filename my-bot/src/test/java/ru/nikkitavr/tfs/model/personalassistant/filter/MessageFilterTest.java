@@ -3,9 +3,9 @@ package ru.nikkitavr.tfs.model.personalassistant.filter;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
-import org.telegram.telegrambots.meta.api.objects.Chat;
-import org.telegram.telegrambots.meta.api.objects.User;
 import ru.nikkitavr.tfs.model.personalassistant.message.Message;
+import ru.nikkitavr.tfs.model.personalassistant.message.TelegramChat;
+import ru.nikkitavr.tfs.model.personalassistant.message.TelegramUser;
 
 class MessageFilterTest {
 
@@ -18,7 +18,7 @@ class MessageFilterTest {
 
     @Test
     void testUserEqual() {
-        User user = new User();
+        TelegramUser user = new TelegramUser();
         user.setId(123L);
         user.setUserName("testuser");
         user.setFirstName("Test");
@@ -41,7 +41,7 @@ class MessageFilterTest {
 
     @Test
     void testChatAndContent() {
-        Chat chat = new Chat();
+        TelegramChat chat = new TelegramChat();
         chat.setId(456L);
         chat.setTitle("My Chat");
         Message msg = new Message();
@@ -57,7 +57,7 @@ class MessageFilterTest {
 
     @Test
     void testOrAndNegation() {
-        Chat chat = new Chat();
+        TelegramChat chat = new TelegramChat();
         chat.setId(456L);
         chat.setTitle("My Chat");
         Message msg = new Message();
@@ -90,7 +90,7 @@ class MessageFilterTest {
     @Test
     void testForwardFromFullVariants() {
         // 1. Forwarded user
-        User fwdUser = new User();
+        TelegramUser fwdUser = new TelegramUser();
         fwdUser.setId(111L);
         fwdUser.setUserName("fwduser");
         fwdUser.setFirstName("Fwd");
@@ -117,7 +117,7 @@ class MessageFilterTest {
         assertFalse(filter1.match(msg1));
 
         // 2. Forwarded chat + signature
-        Chat fwdChat = new Chat();
+        TelegramChat fwdChat = new TelegramChat();
         fwdChat.setId(222L);
         fwdChat.setTitle("Fwd Channel");
         fwdChat.setUserName("fwdchannel");
@@ -148,7 +148,7 @@ class MessageFilterTest {
         assertFalse(filter3.match(msg3));
 
         // 4. Fallback: from
-        User from = new User();
+        TelegramUser from = new TelegramUser();
         from.setId(333L);
         from.setUserName("fromuser");
         from.setFirstName("From");
