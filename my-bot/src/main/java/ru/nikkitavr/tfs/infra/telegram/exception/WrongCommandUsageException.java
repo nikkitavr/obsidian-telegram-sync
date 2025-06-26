@@ -1,7 +1,0 @@
-package ru.nikkitavr.tfs.infra.telegram.exception;
-
-public class WrongCommandUsageException extends UIException {
-  public WrongCommandUsageException(String message) {
-    super(message);
-  }
-}

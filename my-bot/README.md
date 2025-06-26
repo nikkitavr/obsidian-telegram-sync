@@ -20,5 +20,5 @@ each chat are stored in a subfolder named after the chat id.
 
 ```
 mvn package
-java -cp target/my-bot-1.0-SNAPSHOT.jar ru.nikkitavr.tfs.App
+java -cp target/my-bot-1.0-SNAPSHOT.jar ru.nikkitavr.notesassistant.App
 ```
