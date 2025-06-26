@@ -1,4 +1,6 @@
 package ru.nikkitavr.notesassistant.model.personalassistant;
 
-public class OperationConfig {
+public interface OperationConfig <T extends Operation> {
+
+  T getOperation();
 }
