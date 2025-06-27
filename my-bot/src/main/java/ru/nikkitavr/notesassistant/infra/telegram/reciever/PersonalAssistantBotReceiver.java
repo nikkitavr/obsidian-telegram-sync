@@ -1,10 +1,8 @@
-package ru.nikkitavr.notesassistant.infra.telegram;
+package ru.nikkitavr.notesassistant.infra.telegram.reciever;
 
 import jakarta.annotation.PostConstruct;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,18 +10,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.meta.api.methods.reactions.SetMessageReaction;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.EntityType;
-import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.reactions.ReactionTypeEmoji;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.meta.generics.BotSession;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+import ru.nikkitavr.notesassistant.infra.telegram.PersonalAssistantBotCommand;
+import ru.nikkitavr.notesassistant.infra.telegram.client.TelegramMessageSender;
 import ru.nikkitavr.notesassistant.infra.telegram.exception.UIException;
-import ru.nikkitavr.notesassistant.infra.telegram.exception.WrongCommandUsageException;
-import ru.nikkitavr.notesassistant.model.bot.BotCommand;
 import static ru.nikkitavr.notesassistant.model.bot.BotReactions.EDITED_MESSAGE_PROCESSED_EMOJI;
 import static ru.nikkitavr.notesassistant.model.bot.BotReactions.NEW_MESSAGE_PROCESSED_EMOJI;
 import ru.nikkitavr.notesassistant.model.bot.BotUpdateType;
@@ -37,35 +29,40 @@ import ru.nikkitavr.notesassistant.model.personalassistant.message.files.Video;
 import ru.nikkitavr.notesassistant.model.personalassistant.message.files.VideoCircle;
 import ru.nikkitavr.notesassistant.model.personalassistant.message.files.Voice;
 import ru.nikkitavr.notesassistant.service.PersonalAssistantService;
+import ru.nikkitavr.notesassistant.service.telegram.BotCommandService;
 import ru.nikkitavr.notesassistant.service.telegram.TopicTitleService;
 import ru.nikkitavr.notesassistant.utils.TimeUtils;
 
 @Component
-public class PersonalAssistantBot extends TelegramLongPollingBot {
-    private final static Logger LOGGER = LoggerFactory.getLogger(PersonalAssistantBot.class);
+public class PersonalAssistantBotReceiver extends TelegramLongPollingBot {
+    private final static Logger LOGGER = LoggerFactory.getLogger(PersonalAssistantBotReceiver.class);
 
     private final String botUsername;
     private final PersonalAssistantService personalAssistantService;
     private final TopicTitleService topicTitleService;
-    private BotSession botSession;
-
+    private final TelegramMessageSender telegramMessageSender;
+    private final BotCommandService botCommandService;
 
     @Autowired
-    public PersonalAssistantBot(
+    public PersonalAssistantBotReceiver(
         @Value("${telegram.bot.token}") String botToken,
         @Value("${telegram.bot.username}") String botUsername,
-        PersonalAssistantService personalAssistantService, TopicTitleService topicTitleService
+        PersonalAssistantService personalAssistantService,
+        TopicTitleService topicTitleService,
+        TelegramMessageSender telegramMessageSender,
+        BotCommandService botCommandService
     ) {
         super(botToken);
         this.botUsername = botUsername;
         this.personalAssistantService = personalAssistantService;
         this.topicTitleService = topicTitleService;
+        this.telegramMessageSender = telegramMessageSender;
+      this.botCommandService = botCommandService;
     }
 
     @PostConstruct
-    public void start() throws Exception {
-        TelegramBotsApi api = new TelegramBotsApi(DefaultBotSession.class);
-        this.botSession = api.registerBot(this);
+    public void start() throws TelegramApiException {
+        new TelegramBotsApi(DefaultBotSession.class).registerBot(this);
     }
 
     @Override
@@ -89,21 +86,16 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
         handleUpdate(message, updateType);
     }
 
-    @Override
-    public String getBotUsername() {
-        return botUsername;
-    }
-
     private void handleUpdate(org.telegram.telegrambots.meta.api.objects.Message message, BotUpdateType updateType) {
         try {
-            if (checkForCommands(message)) {
+            if (botCommandService.checkForCommands(message, getBotUsername())) {
                 return;
             }
 
             Message assistantMessage = toAssistantMessage(message);
             resolveThreadTitle(assistantMessage, message);
             personalAssistantService.processMessage(assistantMessage);
-            sendReaction(
+            telegramMessageSender.sendReaction(
                 message.getChatId(),
                 message.getMessageThreadId(),
                 updateType == BotUpdateType.NEW_MESSAGE ?
@@ -111,46 +103,16 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
                     EDITED_MESSAGE_PROCESSED_EMOJI
             );
         } catch (UIException e) {
-            sendMessage(message.getChatId(), message.getMessageThreadId(), e.getMessage());
+            telegramMessageSender.sendMessage(message.getChatId(), message.getMessageThreadId(), e.getMessage());
         } catch (Exception e) {
-            sendMessage(message.getChatId(), message.getMessageThreadId(), "Some unhandled error: \n\nMessage: %s \n\nCause: %s \n\nStackTrace: %s"
+            telegramMessageSender.sendMessage(message.getChatId(), message.getMessageThreadId(), "Some unhandled error: \n\nMessage: %s \n\nCause: %s \n\nStackTrace: %s"
                 .formatted(e.getMessage(), e.getCause(), Arrays.toString(e.getStackTrace())));
             LOGGER.error("Some unhandled error", e);
         }
     }
 
 
-    public boolean checkForCommands(org.telegram.telegrambots.meta.api.objects.Message message) throws WrongCommandUsageException {
-        if(message.getEntities() == null) {
-            return false;
-        }
 
-        for (MessageEntity entity : message.getEntities()) {
-            if (entity != null && entity.getOffset() == 0 && EntityType.BOTCOMMAND.equals(entity.getType())) {
-                BotCommand command = BotCommand.fromText(message.getText());
-                if(command.qualifier() == null || command.qualifier().equals(getBotUsername())) {
-                    handleCommand(command, message);
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void handleCommand(BotCommand command, org.telegram.telegrambots.meta.api.objects.Message message) throws WrongCommandUsageException {
-        switch (PersonalAssistantBotCommand.fromValue(command.command())) {
-            case SET_TOPIC_TITLE -> {
-                if (!message.getIsTopicMessage()) {
-                    throw new WrongCommandUsageException("This command should only be used in topics");
-                }
-                if (StringUtils.isBlank(command.arguments())) {
-                    throw new WrongCommandUsageException("Topic name is missing. " +
-                        "Provide it after command: `/cmnd@bot <topicName>` or `/cmnd <topicName>`");
-                }
-                topicTitleService.setTitleForTopic(message.getChat().getId(), message.getMessageThreadId(), command.arguments());
-            }
-        }
-    }
 
     public Message toAssistantMessage(org.telegram.telegrambots.meta.api.objects.Message botMessage) {
         Message msg = new Message()
@@ -287,7 +249,7 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
         if (botMessage.getIsTopicMessage() != null && botMessage.getIsTopicMessage()) {
             Optional<String> title = topicTitleService.getTitleForTopic(botMessage.getChatId(), botMessage.getMessageThreadId());
             if (title.isEmpty()) {
-                sendMessage(botMessage.getChatId(), botMessage.getMessageThreadId(),
+                telegramMessageSender.sendMessage(botMessage.getChatId(), botMessage.getMessageThreadId(),
                     "Please specify the title for this topic using command %s <title>"
                         .formatted(PersonalAssistantBotCommand.SET_TOPIC_TITLE.getValue())
                 );
@@ -297,53 +259,8 @@ public class PersonalAssistantBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendMessage(Long chatId, String text) {
-        sendMessage(chatId, null, text, null);
-    }
-
-    private void sendMessage(Long chatId, String text, Integer replyToMessageId) {
-        sendMessage(chatId, null, text, replyToMessageId);
-    }
-
-    private void sendMessage(Long chatId, Integer threadId, String text) {
-        sendMessage(chatId, threadId, text, null);
-    }
-
-    private void sendMessage(Long chatId, Integer threadId, String text, Integer replyToMessageId) {
-        try {
-            execute(SendMessage.builder()
-                .chatId(String.valueOf(chatId))
-                .messageThreadId(threadId)
-                .text(text)
-                .replyToMessageId(replyToMessageId)
-                .build()
-            );
-        } catch (TelegramApiException e) {
-            LOGGER.error("Error on send message to chat: chatId={}, threadId={}, text={}, replyToMessageId={}",
-                chatId,
-                threadId,
-                text,
-                replyToMessageId,
-                e
-            );
-        }
-    }
-
-    private void sendReaction(Long chatId, Integer messageId, String emoji) {
-        try {
-            execute(SetMessageReaction.builder()
-                .chatId(String.valueOf(chatId))
-                .messageId(messageId)
-                .reactionTypes(List.of(ReactionTypeEmoji.builder().emoji(emoji).build()))
-                .build()
-            );
-        } catch (TelegramApiException e) {
-            LOGGER.error("Error on send message to chat: chatId={}, messageId={}, emoji={}",
-                chatId,
-                messageId,
-                emoji,
-                e
-            );
-        }
+    @Override
+    public String getBotUsername() {
+        return botUsername;
     }
 }

@@ -23,6 +23,7 @@ public class TopicTitleService {
         chatTitlesRepository.save(entity);
     }
 
+    @Transactional(readOnly = true)
     public Optional<String> getTitleForTopic(Long chatId, Integer topicId) {
         return chatTitlesRepository.findTitleByChatIdAndTopicId(chatId, topicId);
     }
