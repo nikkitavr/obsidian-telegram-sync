@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static ru.nikkitavr.notesassistant.template.TemplateUnitContext.SINGLE_ARGUMENT;
 
 public final class TemplateProcessor {
   private static final Pattern TEMPLATE =
@@ -59,24 +58,43 @@ public final class TemplateProcessor {
     return current;
   }
 
+  /* ===== аргументы:  -k:v   -k:"v w"   :val   :"val w"  ===== */
   private static Map<String,String> parseArgs(String s) {
-    Map<String,String> m = new LinkedHashMap<>();
-    if (s == null || s.isBlank()) return m;
+    Map<String,String> map = new LinkedHashMap<>();
+    if (s == null || (s = s.trim()).isEmpty()) return map;
 
-    s = s.trim();
-    /* ── НОВОЕ: компактный синтаксис  {{unit:val}}  ->  -value:val ── */
-    if (s.charAt(0) == ':') {                        // начинается с ':'
-      m.put(SINGLE_ARGUMENT, s.substring(1));              // всё остальное ‒ value
-      return m;
+    /* компактная форма {{unit:val}} */
+    if (s.charAt(0) == ':') {
+      String v = s.substring(1).trim();
+      if(!v.isEmpty()) {
+        map.put(
+            TemplateUnitContext.SINGLE_ARGUMENT,
+            stripQuotes(s.substring(1).trim())
+        );
+      }
+      return map;
     }
 
-    /* ── старый разбор «-k:v -q:w» ── */
-    for (String t : s.split("\\s+")) {
-      int i = t.indexOf(':');
-      if (t.startsWith("-") && i > 0)
-        m.put(t.substring(1, i), t.substring(i + 1));
+    /* длинная форма -k:val или -k:"v w" или -k:'v w' */
+    Pattern tok = Pattern.compile(
+        "-(\\w+):" +                           // ключ
+            "(\"[^\"]*\"|'[^']*'|[^\\s]+)"        // значение
+    );
+    Matcher m = tok.matcher(s);
+    while (m.find()) {
+      map.put(m.group(1), stripQuotes(m.group(2)));
     }
-    return m;
+    return map;
+  }
+
+  /** убирает наружные кавычки, если они есть */
+  private static String stripQuotes(String v) {
+    if (v.length() >= 2) {
+      char f = v.charAt(0), l = v.charAt(v.length()-1);
+      if ((f == '"' && l == '"') || (f == '\'' && l == '\''))
+        return v.substring(1, v.length()-1);
+    }
+    return v;
   }
 
   /* ===== фабричный метод-билдер ===== */
