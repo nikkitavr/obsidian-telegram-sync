@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 public final class TemplateProcessor {
   private static final Pattern TEMPLATE =
-      Pattern.compile("\\{\\{\\s*(\\w+)\\s*([^}]*)}}");
+      Pattern.compile("\\{\\{\\s*([\\w.-]+)\\s*([^}]*)}}");
   private final Class<? extends TemplateUnitContext> ctxClass;
   private final Map<String, TemplateUnitProcessor<? extends TemplateUnitContext>> registry;
 
