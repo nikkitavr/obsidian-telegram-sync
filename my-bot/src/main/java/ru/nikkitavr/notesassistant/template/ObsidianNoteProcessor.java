@@ -1,5 +1,8 @@
 package ru.nikkitavr.notesassistant.template;
 
+import ru.nikkitavr.templation.TemplateEngine;
+import ru.nikkitavr.templation.TemplateContext;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,12 +15,12 @@ import java.util.regex.Pattern;
  */
 public class ObsidianNoteProcessor {
     
-    private final TemplateProcessor templateProcessor;
+    private final TemplateEngine templateEngine;
     private final ObsidianNoteContext context;
     
     public ObsidianNoteProcessor() {
         this.context = new ObsidianNoteContext();
-        this.templateProcessor = TemplateProcessor.builder(ObsidianNoteContext.class)
+        this.templateEngine = TemplateEngine.builder(ObsidianNoteContext.class)
                 // Generic variables (наследуем от пути)
                 .register("content", this::processContent)
                 .register("messageDate", this::processMessageDate)
@@ -55,7 +58,7 @@ public class ObsidianNoteProcessor {
         context.setMessageData(messageData);
         context.setReplacements(new ArrayList<>());
         
-        String result = templateProcessor.process(template, context);
+        String result = templateEngine.process(template, context);
         
         // Применяем замены
         result = applyReplacements(result, context.getReplacements());
@@ -434,7 +437,7 @@ public class ObsidianNoteProcessor {
     /**
      * Контекст для обработки заметок Obsidian.
      */
-    public static class ObsidianNoteContext extends TemplateUnitContext {
+    public static class ObsidianNoteContext extends TemplateContext {
         private ObsidianTemplateExample.NoteMessageData messageData;
         private List<Replacement> replacements;
         

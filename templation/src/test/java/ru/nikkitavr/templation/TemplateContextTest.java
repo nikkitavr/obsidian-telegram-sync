@@ -1,11 +1,11 @@
-package ru.nikkitavr.notesassistant.template;
+package ru.nikkitavr.templation;
 
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class TemplateUnitContextTest {
-    static class TestCtx extends TemplateUnitContext {
+class TemplateContextTest {
+    static class TestCtx extends TemplateContext {
         void callInit(String source, int start, int end, String raw, Map<String, String> args) {
             super.init(source, start, end, raw, args);
         }

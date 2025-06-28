@@ -1,23 +1,20 @@
-package ru.nikkitavr.notesassistant.template;
+package ru.nikkitavr.templation;
 
-import lombok.Getter;
-
-@Getter
 @Deprecated
-public final class TemplateUnit<C extends TemplateUnitContext> {
+public final class TemplateUnit<C extends TemplateContext> {
   private final String name;
   private final Class<C> contextClass;
   private final TemplateUnitProcessor<C> handler;
 
-  public static <C extends TemplateUnitContext> Builder<C> builder(Class<C> clazz) {
+  public static <C extends TemplateContext> Builder<C> builder(Class<C> clazz) {
     return new Builder<>(clazz);
   }
 
-  public static Builder<TemplateUnitContext> builder() {
-    return new Builder<>(TemplateUnitContext.class);
+  public static Builder<TemplateContext> builder() {
+    return new Builder<>(TemplateContext.class);
   }
 
-  public static final class Builder<C extends TemplateUnitContext> {
+  public static final class Builder<C extends TemplateContext> {
     private String name;
     private final Class<C> contextClass;
     private TemplateUnitProcessor<C> handler;
@@ -42,6 +39,18 @@ public final class TemplateUnit<C extends TemplateUnitContext> {
       }
       return new TemplateUnit<>(name, contextClass, handler);
     }
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public Class<C> getContextClass() {
+    return contextClass;
+  }
+
+  public TemplateUnitProcessor<C> getHandler() {
+    return handler;
   }
 
   /* ---------- закрытый конструктор ---------- */

@@ -1,4 +1,4 @@
-package ru.nikkitavr.notesassistant.template;
+package ru.nikkitavr.templation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,7 +15,7 @@ class Template2Test {
    * ===================================================================== */
 
   /** Реальный рабочий контекст со «стейтом» пользователя и пинг-методом. */
-  static final class AppContext extends TemplateUnitContext {
+  static final class AppContext extends TemplateContext {
     private String user = "UNKNOWN";
     private String lastPing;
 
@@ -29,7 +29,7 @@ class Template2Test {
   }
 
   /** «Чужой» контекст, чтобы проверить type-safety в process(). */
-  static final class OtherCtx extends TemplateUnitContext {}
+  static final class OtherCtx extends TemplateContext {}
 
   /* =======================================================================
    *                               Т Е С Т Ы
@@ -41,13 +41,13 @@ class Template2Test {
    */
   @Test
   void process_happyPath_longAndCompactSyntax() {
-    TemplateProcessor proc = TemplateProcessor
+    TemplateEngine proc = TemplateEngine
         .builder(AppContext.class)
         .register("unit",
             ctx -> ctx.replace(
                 ctx.greet(ctx.arg("arg1"), ctx.arg("arg2"))))
         .register("ping",
-            ctx -> { ctx.ping(ctx.arg(TemplateUnitContext.SINGLE_ARGUMENT));
+            ctx -> { ctx.ping(ctx.arg(TemplateContext.SINGLE_ARGUMENT));
               return ctx.replace(""); })
         .build();
 
@@ -65,7 +65,7 @@ class Template2Test {
    */
   @Test
   void process_compactSyntaxSingleValue() {
-    TemplateProcessor proc = TemplateProcessor
+    TemplateEngine proc = TemplateEngine
         .builder(AppContext.class)
         .register("e", ctx -> ctx.replace(ctx.arg("value")))
         .build();
@@ -78,7 +78,7 @@ class Template2Test {
    */
   @Test
   void process_unitWithoutArgs() {
-    TemplateProcessor proc = TemplateProcessor
+    TemplateEngine proc = TemplateEngine
         .builder(AppContext.class)
         .register("empty",
             ctx -> ctx.replace(ctx.args().isEmpty() ? "OK" : "FAIL"))
@@ -93,7 +93,7 @@ class Template2Test {
    */
   @Test
   void process_unknownUnitRemains() {
-    TemplateProcessor proc = TemplateProcessor.builder(AppContext.class).build();
+    TemplateEngine proc = TemplateEngine.builder(AppContext.class).build();
     String str = "text {{unknown}} text";
     assertEquals(str, proc.process(str, new AppContext()));
   }
@@ -103,7 +103,7 @@ class Template2Test {
    */
   @Test
   void builder_duplicateNameThrows() {
-    Executable code = () -> TemplateProcessor
+    Executable code = () -> TemplateEngine
         .builder(AppContext.class)
         .register("dup", ctx -> ctx.replace("1"))
         .register("dup", ctx -> ctx.replace("2"));
@@ -116,7 +116,7 @@ class Template2Test {
    */
   @Test
   void process_wrongContextTypeThrows() {
-    TemplateProcessor proc = TemplateProcessor
+    TemplateEngine proc = TemplateEngine
         .builder(AppContext.class)
         .register("x", ctx -> ctx.replace("ok"))
         .build();
@@ -131,7 +131,7 @@ class Template2Test {
    */
   @Test
   void process_handlerReturningNullThrows() {
-    TemplateProcessor proc = TemplateProcessor
+    TemplateEngine proc = TemplateEngine
         .builder(AppContext.class)
         .register("x", ctx -> null)
         .build();
@@ -147,7 +147,7 @@ class Template2Test {
    */
   @Test
   void process_contextReuseAndArgsRefresh() {
-    TemplateProcessor proc = TemplateProcessor
+    TemplateEngine proc = TemplateEngine
         .builder(AppContext.class)
         .register("echo", ctx -> ctx.replace(ctx.arg("v")))
         .build();
@@ -163,7 +163,7 @@ class Template2Test {
    */
   @Test
   void process_stringWithoutTemplates() {
-    TemplateProcessor proc = TemplateProcessor.builder(AppContext.class).build();
+    TemplateEngine proc = TemplateEngine.builder(AppContext.class).build();
     assertEquals("plain", proc.process("plain", new AppContext()));
   }
 
@@ -172,7 +172,7 @@ class Template2Test {
    */
   @Test
   void process_mixedLongAndCompactForms() {
-    TemplateProcessor proc = TemplateProcessor
+    TemplateEngine proc = TemplateEngine
         .builder(AppContext.class)
         .register("u", ctx ->
             ctx.replace(ctx.arg("a") + ctx.arg("value")))
@@ -186,37 +186,18 @@ class Template2Test {
   /**
    * Тесты для TemplateUnit: builder без name/handler, build с name/handler, выброс исключения при отсутствии обязательных полей.
    */
-  @Test
-  void templateUnit_builderAndValidation() {
-    // build с name и handler
-    var unit = ru.nikkitavr.notesassistant.template.TemplateUnit.builder()
-            .name("test")
-            .operation(ctx -> "ok")
-            .build();
-    org.junit.jupiter.api.Assertions.assertEquals("test", unit.getName());
-    org.junit.jupiter.api.Assertions.assertNotNull(unit.getHandler());
 
-    // builder без name
-    var builderNoName = ru.nikkitavr.notesassistant.template.TemplateUnit.builder();
-    builderNoName.operation(ctx -> "ok");
-    org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, builderNoName::build);
-
-    // builder без handler
-    var builderNoHandler = ru.nikkitavr.notesassistant.template.TemplateUnit.builder();
-    builderNoHandler.name("test");
-    org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, builderNoHandler::build);
-  }
 
   /**
    * Тесты для TemplateUnitContext: методы arg, args, raw, source, replace через публичный API.
    */
   @Test
   void templateUnitContext_methods() {
-    class Ctx extends ru.nikkitavr.notesassistant.template.TemplateUnitContext {
+    class Ctx extends TemplateContext {
       String lastRaw, lastSource, lastA, lastB, replaced;
     }
     var ctx = new Ctx();
-    var proc = ru.nikkitavr.notesassistant.template.TemplateProcessor
+    var proc = TemplateEngine
             .builder(Ctx.class)
             .register("test", c -> {
               c.lastRaw = c.raw();
@@ -241,7 +222,7 @@ class Template2Test {
    */
   @Test
   void process_multipleUnitsInOneString() {
-    TemplateProcessor proc = TemplateProcessor
+    TemplateEngine proc = TemplateEngine
         .builder(AppContext.class)
         .register("a", ctx -> ctx.replace("A" + ctx.arg("v")))
         .register("b", ctx -> ctx.replace("B" + ctx.arg("value")))
@@ -257,7 +238,7 @@ class Template2Test {
    */
   @Test
   void process_argsWithSpecialCharacters() {
-    TemplateProcessor proc = TemplateProcessor
+    TemplateEngine proc = TemplateEngine
         .builder(AppContext.class)
         .register("test", ctx -> ctx.replace(ctx.arg("path") + " -> " + ctx.arg("value")))
         .build();
@@ -271,7 +252,7 @@ class Template2Test {
    */
   @Test
   void process_chainOfTemplates() {
-    TemplateProcessor proc = TemplateProcessor
+    TemplateEngine proc = TemplateEngine
         .builder(AppContext.class)
         .register("step1", ctx -> ctx.replace("STEP1_" + ctx.arg("value")))
         .register("step2", ctx -> ctx.replace("STEP2_" + ctx.arg("value")))
@@ -290,7 +271,7 @@ class Template2Test {
    */
   @Test
   void process_customContextWithState() {
-    class StatefulContext extends TemplateUnitContext {
+    class StatefulContext extends TemplateContext {
       private int counter = 0;
       private StringBuilder log = new StringBuilder();
       
@@ -300,7 +281,7 @@ class Template2Test {
       String getLog() { return log.toString(); }
     }
 
-    TemplateProcessor proc = TemplateProcessor
+    TemplateEngine proc = TemplateEngine
         .builder(StatefulContext.class)
         .register("count", ctx -> {
           ctx.increment();
@@ -325,14 +306,14 @@ class Template2Test {
    */
   @Test
   void process_contextUpdatesBetweenCalls() {
-    class TrackingContext extends TemplateUnitContext {
+    class TrackingContext extends TemplateContext {
       private String lastProcessed = "";
       
       void setLastProcessed(String value) { this.lastProcessed = value; }
       String getLastProcessed() { return lastProcessed; }
     }
 
-    TemplateProcessor proc = TemplateProcessor
+    TemplateEngine proc = TemplateEngine
         .builder(TrackingContext.class)
         .register("track", ctx -> {
           ctx.setLastProcessed(ctx.raw());
@@ -352,7 +333,7 @@ class Template2Test {
    */
   @Test
   void process_emptyArgsAndEdgeCases() {
-    TemplateProcessor proc = TemplateProcessor
+    TemplateEngine proc = TemplateEngine
         .builder(AppContext.class)
         .register("empty", ctx -> ctx.replace("EMPTY"))
         .register("echo", ctx -> ctx.replace(ctx.arg("value") != null ? ctx.arg("value") : "NULL"))
@@ -368,7 +349,7 @@ class Template2Test {
    */
   @Test
   void process_mixedKnownAndUnknownUnits() {
-    TemplateProcessor proc = TemplateProcessor
+    TemplateEngine proc = TemplateEngine
         .builder(AppContext.class)
         .register("known", ctx -> ctx.replace("KNOWN"))
         .build();
@@ -382,7 +363,7 @@ class Template2Test {
    */
   @Test
   void process_manyTemplatesInSequence() {
-    TemplateProcessor proc = TemplateProcessor
+    TemplateEngine proc = TemplateEngine
         .builder(AppContext.class)
         .register("num", ctx -> ctx.replace(ctx.arg("value")))
         .build();
@@ -401,51 +382,51 @@ class Template2Test {
 
   @Test
   void longForm_emptyQuotedValue_keptAsEmptyString() {
-    TemplateProcessor p = TemplateProcessor
+    TemplateEngine p = TemplateEngine
         .builder()
         .register("u", ctx -> ctx.replace(
             ctx.arg("k") == null ? "NULL" : "[" + ctx.arg("k") + "]"))
         .build();
 
-    String out = p.process("{{u -k:\"\"}}", new TemplateUnitContext());
+    String out = p.process("{{u -k:\"\"}}", new TemplateContext());
     assertEquals("[]", out);                 // пустая строка сохраняется
   }
 
   /* ---------- 2. Пустое значение в кавычках, компактная форма ---------- */
   @Test
   void compactForm_emptyQuotedValue_keptAsEmptyString() {
-    TemplateProcessor p = TemplateProcessor
+    TemplateEngine p = TemplateEngine
         .builder()
         .register("e", ctx -> ctx.replace(
             ctx.arg("value") == null ? "NULL" : "#" + ctx.arg("value") + "#"))
         .build();
 
-    String out = p.process("{{e:\"\"}}", new TemplateUnitContext());
+    String out = p.process("{{e:\"\"}}", new TemplateContext());
     assertEquals("##", out);                 // тоже пустая строка
   }
 
   /* ---------- 3. Длинная форма без кавычек и без символов (`-k:`) ---------- */
   @Test
   void longForm_keyWithoutValue_isIgnored() {
-    TemplateProcessor p = TemplateProcessor
+    TemplateEngine p = TemplateEngine
         .builder()
         .register("u", ctx -> ctx.replace(
             ctx.arg("k") == null ? "NULL" : ctx.arg("k")))
         .build();
 
-    String out = p.process("{{u -k: -x:1}}", new TemplateUnitContext());
+    String out = p.process("{{u -k: -x:1}}", new TemplateContext());
     assertEquals("NULL", out);               // ключ k отсутствует
   }
 
   /* ---------- 4. Нет пробела между двумя ключами (`-k1:-k2:val`) ---------- */
   @Test
   void longForm_twoKeysStuckTogether_secondAbsorbedIntoFirst() {
-    TemplateProcessor p = TemplateProcessor
+    TemplateEngine p = TemplateEngine
         .builder()
         .register("u", ctx -> ctx.replace(ctx.arg("k1")))
         .build();
 
-    String out = p.process("{{u -k1:-k2:abc}}", new TemplateUnitContext());
+    String out = p.process("{{u -k1:-k2:abc}}", new TemplateContext());
     assertEquals("-k2:abc", out);            // всё попало в значение k1
   }
 }

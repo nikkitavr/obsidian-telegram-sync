@@ -1,4 +1,4 @@
-package ru.nikkitavr.notesassistant.template;
+package ru.nikkitavr.templation;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Тесты для edge cases парсинга аргументов и граничных случаев регулярных выражений.
  */
-class TemplateProcessorEdgeCasesTest {
+class TemplateEngineEdgeCasesTest {
 
     /* =======================================================================
      *                    ТЕСТЫ ПАРСИНГА АРГУМЕНТОВ
@@ -17,7 +17,7 @@ class TemplateProcessorEdgeCasesTest {
      */
     @Test
     void parseArgs_escapedCharacters_longForm() {
-        TemplateProcessor proc = TemplateProcessor
+        TemplateEngine proc = TemplateEngine
                 .builder()
                 .register("test", ctx -> {
                     String result = "path:" + ctx.arg("path") + 
@@ -29,7 +29,7 @@ class TemplateProcessorEdgeCasesTest {
 
         // Экранированные символы в значениях
         String result = proc.process("{{test -path:C:\\Users\\Name -value:file\\with\\slashes -special:quotes\"inside}}", 
-                                   new TemplateUnitContext());
+                                   new TemplateContext());
         
         Assertions.assertEquals("path:C:\\Users\\Name,value:file\\with\\slashes,special:quotes\"inside", result);
     }
@@ -39,13 +39,13 @@ class TemplateProcessorEdgeCasesTest {
      */
     @Test
     void parseArgs_escapedCharacters_compactForm() {
-        TemplateProcessor proc = TemplateProcessor
+        TemplateEngine proc = TemplateEngine
                 .builder()
                 .register("test", ctx -> ctx.replace("value:" + ctx.arg("value")))
                 .build();
 
         // Экранированные символы в компактной форме
-        String result = proc.process("{{test:C:\\Users\\Name\\file.txt}}", new TemplateUnitContext());
+        String result = proc.process("{{test:C:\\Users\\Name\\file.txt}}", new TemplateContext());
         Assertions.assertEquals("value:C:\\Users\\Name\\file.txt", result);
     }
 
@@ -60,12 +60,12 @@ class TemplateProcessorEdgeCasesTest {
         }
         String longArg = longValue.toString();
 
-        TemplateProcessor proc = TemplateProcessor
+        TemplateEngine proc = TemplateEngine
                 .builder()
                 .register("test", ctx -> ctx.replace("length:" + ctx.arg("value").length()))
                 .build();
 
-        String result = proc.process("{{test -value:" + longArg + "}}", new TemplateUnitContext());
+        String result = proc.process("{{test -value:" + longArg + "}}", new TemplateContext());
         Assertions.assertEquals("length:" + longArg.length(), result);
     }
 
@@ -74,7 +74,7 @@ class TemplateProcessorEdgeCasesTest {
      */
     @Test
     void parseArgs_whitespaceAndTabs() {
-        TemplateProcessor proc = TemplateProcessor
+        TemplateEngine proc = TemplateEngine
                 .builder()
                 .register("test", ctx -> {
                     String result = "arg1:" + ctx.arg("arg1") + 
@@ -86,7 +86,7 @@ class TemplateProcessorEdgeCasesTest {
 
         // Пробелы и табуляция в аргументах
         String result = proc.process("{{test -arg1:\"value with spaces\t\" -arg2:\"\ttabbed value\" -arg3:normal}}",
-                                   new TemplateUnitContext());
+                                   new TemplateContext());
         
         Assertions.assertEquals("arg1:value with spaces\t,arg2:\ttabbed value,arg3:normal", result);
     }
@@ -100,13 +100,13 @@ class TemplateProcessorEdgeCasesTest {
      */
     @Test
     void regex_nestedBrackets_shouldRemainUnchanged() {
-        TemplateProcessor proc = TemplateProcessor
+        TemplateEngine proc = TemplateEngine
                 .builder()
                 .register("test", ctx -> ctx.replace("PROCESSED"))
                 .build();
 
         // Вложенные скобки не должны обрабатываться как шаблоны
-        String result = proc.process("{{test}} and {{nested {{brackets}}}} and {{test}}", new TemplateUnitContext());
+        String result = proc.process("{{test}} and {{nested {{brackets}}}} and {{test}}", new TemplateContext());
         Assertions.assertEquals("PROCESSED and {{nested {{brackets}}}} and PROCESSED", result);
     }
 
@@ -115,13 +115,13 @@ class TemplateProcessorEdgeCasesTest {
      */
     @Test
     void regex_escapedCharacters() {
-        TemplateProcessor proc = TemplateProcessor
+        TemplateEngine proc = TemplateEngine
                 .builder()
                 .register("test", ctx -> ctx.replace("PROCESSED"))
                 .build();
 
         // Экранированные символы в шаблонах
-        String result = proc.process("{{test}} and \\{{escaped}} and {{test}}", new TemplateUnitContext());
+        String result = proc.process("{{test}} and \\{{escaped}} and {{test}}", new TemplateContext());
         Assertions.assertEquals("PROCESSED and \\{{escaped}} and PROCESSED", result);
     }
 
@@ -136,12 +136,12 @@ class TemplateProcessorEdgeCasesTest {
         }
         String unitName = longName.toString();
 
-        TemplateProcessor proc = TemplateProcessor
+        TemplateEngine proc = TemplateEngine
                 .builder()
                 .register(unitName, ctx -> ctx.replace("LONG_UNIT_PROCESSED"))
                 .build();
 
-        String result = proc.process("{{" + unitName + "}}", new TemplateUnitContext());
+        String result = proc.process("{{" + unitName + "}}", new TemplateContext());
         Assertions.assertEquals("LONG_UNIT_PROCESSED", result);
     }
 
@@ -150,14 +150,14 @@ class TemplateProcessorEdgeCasesTest {
      */
     @Test
     void regex_whitespaceInUnitNames() {
-        TemplateProcessor proc = TemplateProcessor
+        TemplateEngine proc = TemplateEngine
                 .builder()
                 .register("test", ctx -> ctx.replace("PROCESSED"))
                 .register("test2", ctx -> ctx.replace("PROCESSED2"))
                 .build();
 
         // Пробелы в именах юнитов
-        String result = proc.process("{{ test }} {{  test2  }}", new TemplateUnitContext());
+        String result = proc.process("{{ test }} {{  test2  }}", new TemplateContext());
         Assertions.assertEquals("PROCESSED PROCESSED2", result);
     }
 
@@ -166,13 +166,13 @@ class TemplateProcessorEdgeCasesTest {
      */
     @Test
     void regex_edgeCases_emptyTemplates() {
-        TemplateProcessor proc = TemplateProcessor
+        TemplateEngine proc = TemplateEngine
                 .builder()
                 .register("test", ctx -> ctx.replace("PROCESSED"))
                 .build();
 
         // Пустые шаблоны должны остаться как есть
-        String result = proc.process("{{}} {{ }} {{  }}", new TemplateUnitContext());
+        String result = proc.process("{{}} {{ }} {{  }}", new TemplateContext());
         Assertions.assertEquals("{{}} {{ }} {{  }}", result);
     }
 
@@ -181,14 +181,14 @@ class TemplateProcessorEdgeCasesTest {
      */
     @Test
     void regex_numbersInUnitNames() {
-        TemplateProcessor proc = TemplateProcessor
+        TemplateEngine proc = TemplateEngine
                 .builder()
                 .register("test123", ctx -> ctx.replace("NUMERIC"))
                 .register("123test", ctx -> ctx.replace("START_NUMERIC"))
                 .register("test_456", ctx -> ctx.replace("UNDERSCORE_NUMERIC"))
                 .build();
 
-        String result = proc.process("{{test123}} {{123test}} {{test_456}}", new TemplateUnitContext());
+        String result = proc.process("{{test123}} {{123test}} {{test_456}}", new TemplateContext());
         Assertions.assertEquals("NUMERIC START_NUMERIC UNDERSCORE_NUMERIC", result);
     }
 
@@ -197,14 +197,14 @@ class TemplateProcessorEdgeCasesTest {
      */
     @Test
     void regex_specialCharactersInNames() {
-        TemplateProcessor proc = TemplateProcessor
+        TemplateEngine proc = TemplateEngine
                 .builder()
                 .register("test-name", ctx -> ctx.replace("HYPHEN"))
                 .register("test_name", ctx -> ctx.replace("UNDERSCORE"))
                 .register("test.name", ctx -> ctx.replace("DOT"))
                 .build();
 
-        String result = proc.process("{{test-name}} {{test_name}} {{test.name}}", new TemplateUnitContext());
+        String result = proc.process("{{test-name}} {{test_name}} {{test.name}}", new TemplateContext());
         Assertions.assertEquals("HYPHEN UNDERSCORE DOT", result);
     }
 } 

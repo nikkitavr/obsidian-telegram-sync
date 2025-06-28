@@ -10,7 +10,7 @@ import ru.nikkitavr.notesassistant.model.personalassistant.filter.MessageFilter;
 @Getter
 @Setter
 public class PersonalAssistantConfiguration {
-  private String vaultPath;
+
   private List<DistributionRule> distributionRules;
 
   @Getter

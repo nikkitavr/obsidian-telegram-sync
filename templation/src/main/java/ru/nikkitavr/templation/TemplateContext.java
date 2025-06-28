@@ -1,8 +1,8 @@
-package ru.nikkitavr.notesassistant.template;
+package ru.nikkitavr.templation;
 
 import java.util.Map;
 
-public class TemplateUnitContext {
+public class TemplateContext {
   private String source;           // вся строка
   private String raw; // «{{tmpUnit1 -arg1:v1}}»
   private int start, end;

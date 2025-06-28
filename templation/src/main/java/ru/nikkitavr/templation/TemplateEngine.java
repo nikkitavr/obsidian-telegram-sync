@@ -1,4 +1,4 @@
-package ru.nikkitavr.notesassistant.template;
+package ru.nikkitavr.templation;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -7,19 +7,19 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public final class TemplateProcessor {
+public final class TemplateEngine {
   private static final Pattern TEMPLATE =
       Pattern.compile("\\{\\{\\s*([\\w.-]+)\\s*([^}]*)}}");
-  private final Class<? extends TemplateUnitContext> ctxClass;
-  private final Map<String, TemplateUnitProcessor<? extends TemplateUnitContext>> registry;
+  private final Class<? extends TemplateContext> ctxClass;
+  private final Map<String, TemplateUnitProcessor<? extends TemplateContext>> registry;
 
-  private TemplateProcessor(Class<? extends TemplateUnitContext> cls, Map<String, TemplateUnitProcessor<?>> reg) {
+  private TemplateEngine(Class<? extends TemplateContext> cls, Map<String, TemplateUnitProcessor<?>> reg) {
     this.ctxClass = cls;
     this.registry = Map.copyOf(reg);
   }
 
   /* ===== публичный API ===== */
-  public String process(String source, TemplateUnitContext ctxInstance) {
+  public String process(String source, TemplateContext ctxInstance) {
     Objects.requireNonNull(ctxInstance, "context instance is null");
 
     if (!ctxClass.isInstance(ctxInstance))          // защита от ошибки вызова
@@ -38,7 +38,7 @@ public final class TemplateProcessor {
       String argSt = m.group(2);
 
       @SuppressWarnings("unchecked")
-      var handler = (TemplateUnitProcessor<TemplateUnitContext>) registry.get(name);
+      var handler = (TemplateUnitProcessor<TemplateContext>) registry.get(name);
       if (handler == null) {              // неизвестный unit: пропускаем
         searchFrom = m.end();           // …просто шагаем дальше
         continue;
@@ -68,7 +68,7 @@ public final class TemplateProcessor {
       String v = s.substring(1).trim();
       if(!v.isEmpty()) {
         map.put(
-            TemplateUnitContext.SINGLE_ARGUMENT,
+            TemplateContext.SINGLE_ARGUMENT,
             stripQuotes(s.substring(1).trim())
         );
       }
@@ -98,16 +98,16 @@ public final class TemplateProcessor {
   }
 
   /* ===== фабричный метод-билдер ===== */
-  public static <C extends TemplateUnitContext> Builder<C> builder(Class<C> ctxClass) {
+  public static <C extends TemplateContext> Builder<C> builder(Class<C> ctxClass) {
     return new Builder<>(ctxClass);
   }
 
-  public static Builder<TemplateUnitContext> builder() {
-    return new Builder<>(TemplateUnitContext.class);
+  public static Builder<TemplateContext> builder() {
+    return new Builder<>(TemplateContext.class);
   }
 
   /* ====== generic-builder ====== */
-  public static final class Builder<C extends TemplateUnitContext> {
+  public static final class Builder<C extends TemplateContext> {
     private final Class<C> ctxClass;
     private final Map<String, TemplateUnitProcessor<C>> tmp = new HashMap<>();
 
@@ -119,8 +119,8 @@ public final class TemplateProcessor {
       return this;
     }
 
-    public TemplateProcessor build() {
-      return new TemplateProcessor(ctxClass, new HashMap<>(tmp));
+    public TemplateEngine build() {
+      return new TemplateEngine(ctxClass, new HashMap<>(tmp));
     }
   }
 }

@@ -1,7 +1,7 @@
-package ru.nikkitavr.notesassistant.template;
+package ru.nikkitavr.templation;
 
 @FunctionalInterface
-public interface TemplateUnitProcessor<C extends TemplateUnitContext> {
+public interface TemplateUnitProcessor<C extends TemplateContext> {
   /** вернуть строку-замену для подстановки в исходный текст */
   String apply(C ctx);
 }

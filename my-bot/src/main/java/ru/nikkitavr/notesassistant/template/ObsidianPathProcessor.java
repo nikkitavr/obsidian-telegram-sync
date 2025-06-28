@@ -1,8 +1,9 @@
 package ru.nikkitavr.notesassistant.template;
 
+import ru.nikkitavr.templation.TemplateEngine;
+import ru.nikkitavr.templation.TemplateContext;
+
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,12 +13,12 @@ import java.util.regex.Pattern;
  */
 public class ObsidianPathProcessor {
     
-    private final TemplateProcessor templateProcessor;
+    private final TemplateEngine templateEngine;
     private final ObsidianPathContext context;
     
     public ObsidianPathProcessor() {
         this.context = new ObsidianPathContext();
-        this.templateProcessor = TemplateProcessor.builder(ObsidianPathContext.class)
+        this.templateEngine = TemplateEngine.builder(ObsidianPathContext.class)
                 // Generic variables для путей
                 .register("content", this::processContent)
                 .register("messageDate", this::processMessageDate)
@@ -47,7 +48,7 @@ public class ObsidianPathProcessor {
      */
     public String processPath(String template, ObsidianTemplateExample.MessageData messageData) {
         context.setMessageData(messageData);
-        String result = templateProcessor.process(template, context);
+        String result = templateEngine.process(template, context);
         
         // Постобработка пути
         result = sanitizePath(result);
@@ -304,7 +305,7 @@ public class ObsidianPathProcessor {
     /**
      * Контекст для обработки путей Obsidian.
      */
-    public static class ObsidianPathContext extends TemplateUnitContext {
+    public static class ObsidianPathContext extends TemplateContext {
         private ObsidianTemplateExample.MessageData messageData;
         
         public void setMessageData(ObsidianTemplateExample.MessageData messageData) {
