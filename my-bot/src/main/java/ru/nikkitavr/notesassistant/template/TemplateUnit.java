@@ -3,6 +3,7 @@ package ru.nikkitavr.notesassistant.template;
 import lombok.Getter;
 
 @Getter
+@Deprecated
 public final class TemplateUnit<C extends TemplateUnitContext> {
   private final String name;
   private final Class<C> contextClass;
